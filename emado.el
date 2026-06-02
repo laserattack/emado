@@ -148,7 +148,24 @@
   :description "hide TAGS"
   :transient t)
 
+(transient-define-suffix emado-init ()
+  "Initialize main directory in current location."
+  :description "init main directory"
+  (interactive)
+  (let ((output (emado-run (list "-i"))))
+    (emado--display output)
+    (transient-quit-one)))
+
+(transient-define-suffix emado-new ()
+  "Create new entry."
+  :description "new entry"
+  (interactive)
+  (let ((output (emado-run (list "-n"))))
+    (emado--display output)
+    (transient-quit-one)))
+
 (transient-define-suffix emado-print-suffix ()
+  "Print entries matching query."
   :description "print by query"
   (interactive)
   (let ((args (transient-args 'emado-menu))
@@ -157,6 +174,7 @@
     (transient-quit-one)))
 
 (transient-define-suffix emado-remove-suffix ()
+  "Romove entries matching query."
   :description "remove by query"
   (interactive)
   (let ((args (transient-args 'emado-menu))
@@ -170,7 +188,9 @@
   "Mado entry manager."
    ["Action"
     ("p" "print by query" emado-print-suffix)
-    ("r" "remove by query" emado-remove-suffix)]
+    ("r" "remove by query" emado-remove-suffix)
+    ("i" "init main directory" emado-init)
+    ("n" "new entry" emado-new)]
    ["Field visibility"
     ("o" "show only hidden fields" emado-flag-only)
     ("N" "hide NAME field" emado-flag-name)

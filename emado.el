@@ -31,18 +31,27 @@
       (with-current-buffer standard-output
         (apply #'call-process emado-executable nil t nil args)))))
 
+(defun emado--display (output)
+  "Display OUTPUT in compilation buffer."
+  (with-current-buffer (get-buffer-create "*emado*")
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (insert output)
+      (compilation-mode)
+      (goto-char (point-min)))
+    (pop-to-buffer (current-buffer))))
+
 ;;;###autoload
 (defun emado-print (query)
   "Print entries matching QUERY in a compilation buffer."
   (interactive "sQuery: ")
-  (let ((output (emado-run (list "-p" query))))
-    (with-current-buffer (get-buffer-create "*emado*")
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert output)
-        (compilation-mode)
-        (goto-char (point-min)))
-      (pop-to-buffer (current-buffer)))))
+  (emado--display (emado-run (list "-p" query))))
+
+;;;###autoload
+(defun emado-remove (query)
+  "Remove entries matching QUERY in a compilation buffer."
+  (interactive "sQuery: ")
+  (emado--display (emado-run (list "-r" query))))
 
 ;; Transient menu
 
@@ -50,8 +59,10 @@
   "Mado entry manager."
   [["Query"
     ("a" "all entries" (lambda () (interactive) (emado-print "all")))
-    ("p" "prompt for query" (lambda () (interactive)
-                               (emado-print (read-string "Query (print): "))))]]
+    ("p" "print by query" (lambda () (interactive)
+                            (emado-print (read-string "Query (print): "))))
+    ("r" "remove by query" (lambda () (interactive)
+                             (emado-remove (read-string "Query (remove): "))))]]
   [["Essential commands"
     ("q" "quit" transient-quit-one)]])
 

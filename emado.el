@@ -67,8 +67,7 @@
 (defconst emado-font-lock-keywords
   (list
    '("^\\(/[^:\n]+:[0-9]+:[0-9]+:\\)" 1 'emado-field-face)
-   '("\\<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\)\\>"
-     1 'emado-field-face))
+   '("\\<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-field-face))
   "Font lock keywords for emado-mode.")
 
 (define-derived-mode emado-mode fundamental-mode "Emado"
@@ -104,14 +103,12 @@
 (transient-define-argument emado-flag-only ()
   "Only mode: hide all fields first."
   :class 'transient-switch
-  :key "o"
   :argument "-o"
   :description "only mode")
 
 (transient-define-infix emado-flag-name ()
   "Hide NAME field."
   :class 'transient-switch
-  :key "N"
   :argument "-N"
   :description "hide NAME"
   :transient t)
@@ -119,7 +116,6 @@
 (transient-define-infix emado-flag-time ()
   "Hide TIME field."
   :class 'transient-switch
-  :key "T"
   :argument "-T"
   :description "hide TIME"
   :transient t)
@@ -127,7 +123,6 @@
 (transient-define-infix emado-flag-deadline ()
   "Hide DEADLINE field."
   :class 'transient-switch
-  :key "I"
   :argument "-I"
   :description "hide DEADLINE"
   :transient t)
@@ -135,7 +130,6 @@
 (transient-define-infix emado-flag-priority ()
   "Hide PRIORITY field."
   :class 'transient-switch
-  :key "P"
   :argument "-P"
   :description "hide PRIORITY"
   :transient t)
@@ -143,7 +137,6 @@
 (transient-define-infix emado-flag-status ()
   "Hide STATUS field."
   :class 'transient-switch
-  :key "S"
   :argument "-S"
   :description "hide STATUS"
   :transient t)
@@ -151,14 +144,12 @@
 (transient-define-infix emado-flag-tags ()
   "Hide TAGS field."
   :class 'transient-switch
-  :key "A"
   :argument "-A"
   :description "hide TAGS"
   :transient t)
 
 (transient-define-suffix emado-print-suffix ()
   :description "print by query"
-  :key "p"
   (interactive)
   (let ((args (transient-args 'emado-menu))
         (query (read-string "Query (print): ")))
@@ -167,7 +158,6 @@
 
 (transient-define-suffix emado-remove-suffix ()
   :description "remove by query"
-  :key "r"
   (interactive)
   (let ((args (transient-args 'emado-menu))
         (query (read-string "Query (remove): ")))
@@ -178,7 +168,7 @@
 
 (transient-define-prefix emado-menu ()
   "Mado entry manager."
-   ["Print/Remove"
+   ["Action"
     ("p" "print by query" emado-print-suffix)
     ("r" "remove by query" emado-remove-suffix)]
    ["Field visibility"

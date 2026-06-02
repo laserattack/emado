@@ -103,79 +103,67 @@
 (transient-define-argument emado-flag-only ()
   "Only mode: hide all fields first."
   :class 'transient-switch
-  :argument "-o"
-  :description "only mode")
+  :argument "-o")
 
 (transient-define-infix emado-flag-name ()
   "Hide NAME field."
   :class 'transient-switch
-  :argument "-N"
-  :description "hide NAME"
-  :transient t)
+  :argument "-N")
 
 (transient-define-infix emado-flag-time ()
   "Hide TIME field."
   :class 'transient-switch
-  :argument "-T"
-  :description "hide TIME"
-  :transient t)
+  :argument "-T")
 
 (transient-define-infix emado-flag-deadline ()
   "Hide DEADLINE field."
   :class 'transient-switch
-  :argument "-I"
-  :description "hide DEADLINE"
-  :transient t)
+  :argument "-I")
 
 (transient-define-infix emado-flag-priority ()
   "Hide PRIORITY field."
   :class 'transient-switch
-  :argument "-P"
-  :description "hide PRIORITY"
-  :transient t)
+  :argument "-P")
 
 (transient-define-infix emado-flag-status ()
   "Hide STATUS field."
   :class 'transient-switch
-  :argument "-S"
-  :description "hide STATUS"
-  :transient t)
+  :argument "-S")
 
 (transient-define-infix emado-flag-tags ()
   "Hide TAGS field."
   :class 'transient-switch
-  :argument "-A"
-  :description "hide TAGS"
-  :transient t)
+  :argument "-A")
+
+(transient-define-infix emado-flag-force ()
+  "Force init main directory in cwd even if exists above."
+  :class 'transient-switch
+  :argument "-F")
 
 (transient-define-suffix emado-init ()
   "Initialize main directory in current location."
-  :description "init main directory"
   (interactive)
-  (let ((output (emado-run (list "-i"))))
-    (emado--display output)
+  (let ((args (transient-args 'emado-menu)))
+    (emado--display (emado-run (append args (list "-i"))))
     (transient-quit-one)))
 
 (transient-define-suffix emado-new ()
   "Create new entry."
-  :description "new entry"
   (interactive)
-  (let ((output (emado-run (list "-n"))))
-    (emado--display output)
+  (let ((args (transient-args 'emado-menu)))
+    (emado--display (emado-run (append args (list "-n"))))
     (transient-quit-one)))
 
-(transient-define-suffix emado-print-suffix ()
+(transient-define-suffix emado-print ()
   "Print entries matching query."
-  :description "print by query"
   (interactive)
   (let ((args (transient-args 'emado-menu))
         (query (read-string "Query (print): ")))
     (emado--display (emado-run (append args (list "-p" query))))
     (transient-quit-one)))
 
-(transient-define-suffix emado-remove-suffix ()
-  "Romove entries matching query."
-  :description "remove by query"
+(transient-define-suffix emado-remove ()
+  "Remove entries matching query."
   (interactive)
   (let ((args (transient-args 'emado-menu))
         (query (read-string "Query (remove): ")))
@@ -186,12 +174,12 @@
 
 (transient-define-prefix emado-menu ()
   "Mado entry manager."
-   ["Action"
-    ("p" "print by query" emado-print-suffix)
-    ("r" "remove by query" emado-remove-suffix)
-    ("i" "init main directory" emado-init)
-    ("n" "new entry" emado-new)]
-   ["Field visibility"
+  ["Action"
+   [("p" "print by query" emado-print)
+    ("r" "remove by query" emado-remove)]
+   [("i" "init main directory" emado-init)
+    ("n" "new entry" emado-new)]]
+  [["Field visibility flags"
     ("o" "show only hidden fields" emado-flag-only)
     ("N" "hide NAME field" emado-flag-name)
     ("T" "hide TIME field" emado-flag-time)
@@ -199,6 +187,8 @@
     ("P" "hide PRIORITY field" emado-flag-priority)
     ("S" "hide STATUS field" emado-flag-status)
     ("A" "hide TAGS field" emado-flag-tags)]
+   ["Other flags"
+    ("F" "force init main directory" emado-flag-force)]]
   ["Misc"
    ("q" "quit" transient-quit-one)])
 

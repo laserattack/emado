@@ -21,6 +21,12 @@
                  (directory :tag "Project root"))
   :group 'emado)
 
+(defface emado-field-face
+  '((t :foreground "unspecified" :weight normal))
+  "Face for highlighting field names and paths.
+Customize this face to enable coloring."
+  :group 'emado)
+
 (defun emado-next-line ()
   "Move to next logical line."
   (interactive)
@@ -59,10 +65,19 @@
     map)
   "Keymap for emado buffer.")
 
+(defconst emado-font-lock-keywords
+  (list
+   '("^\\(/[^:\n]+:[0-9]+:[0-9]+:\\)" 1 'emado-field-face)
+   '("\\<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\)\\>"
+     1 'emado-field-face))
+  "Font lock keywords for emado-mode.")
+
 (define-derived-mode emado-mode fundamental-mode "Emado"
   "Major mode for viewing mado output."
   (read-only-mode 1)
-  (use-local-map emado-mode-map))
+  (use-local-map emado-mode-map)
+  (setq-local font-lock-defaults '(emado-font-lock-keywords t))
+  (font-lock-mode 1))
 
 (defun emado--display (output)
   "Display OUTPUT."

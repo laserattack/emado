@@ -23,8 +23,7 @@
 
 (defface emado-field-face
   '((t :foreground "unspecified" :weight normal))
-  "Face for highlighting field names and paths.
-Customize this face to enable coloring."
+  "Face for highlighting field names and paths."
   :group 'emado)
 
 (defun emado-next-line ()
@@ -100,31 +99,98 @@ Customize this face to enable coloring."
       (with-current-buffer standard-output
         (apply #'call-process emado-executable nil t nil args)))))
 
-;;;###autoload
-(defun emado-print (query)
-  "Print entries matching QUERY."
-  (interactive "sQuery: ")
-  (let ((output (emado-run (list "-p" query))))
-    (emado--display output)))
+;; Transient flags
 
-;;;###autoload
-(defun emado-remove (query)
-  "Remove entries matching QUERY."
-  (interactive "sQuery: ")
-  (let ((output (emado-run (list "-r" query))))
-    (emado--display output)))
+(transient-define-argument emado-flag-only ()
+  "Only mode: hide all fields first."
+  :class 'transient-switch
+  :key "o"
+  :argument "-o"
+  :description "only mode")
+
+(transient-define-infix emado-flag-name ()
+  "Hide NAME field."
+  :class 'transient-switch
+  :key "N"
+  :argument "-N"
+  :description "hide NAME"
+  :transient t)
+
+(transient-define-infix emado-flag-time ()
+  "Hide TIME field."
+  :class 'transient-switch
+  :key "T"
+  :argument "-T"
+  :description "hide TIME"
+  :transient t)
+
+(transient-define-infix emado-flag-deadline ()
+  "Hide DEADLINE field."
+  :class 'transient-switch
+  :key "I"
+  :argument "-I"
+  :description "hide DEADLINE"
+  :transient t)
+
+(transient-define-infix emado-flag-priority ()
+  "Hide PRIORITY field."
+  :class 'transient-switch
+  :key "P"
+  :argument "-P"
+  :description "hide PRIORITY"
+  :transient t)
+
+(transient-define-infix emado-flag-status ()
+  "Hide STATUS field."
+  :class 'transient-switch
+  :key "S"
+  :argument "-S"
+  :description "hide STATUS"
+  :transient t)
+
+(transient-define-infix emado-flag-tags ()
+  "Hide TAGS field."
+  :class 'transient-switch
+  :key "A"
+  :argument "-A"
+  :description "hide TAGS"
+  :transient t)
+
+(transient-define-suffix emado-print-suffix ()
+  :description "print by query"
+  :key "p"
+  (interactive)
+  (let ((args (transient-args 'emado-menu))
+        (query (read-string "Query (print): ")))
+    (emado--display (emado-run (append args (list "-p" query))))
+    (transient-quit-one)))
+
+(transient-define-suffix emado-remove-suffix ()
+  :description "remove by query"
+  :key "r"
+  (interactive)
+  (let ((args (transient-args 'emado-menu))
+        (query (read-string "Query (remove): ")))
+    (emado--display (emado-run (append args (list "-r" query))))
+    (transient-quit-one)))
 
 ;; Transient menu
 
 (transient-define-prefix emado-menu ()
   "Mado entry manager."
-  [["Query"
-    ("p" "print by query" (lambda () (interactive)
-                            (emado-print (read-string "Query (print): "))))
-    ("r" "remove by query" (lambda () (interactive)
-                             (emado-remove (read-string "Query (remove): "))))]]
-  [["Essential commands"
-    ("q" "quit" transient-quit-one)]])
+   ["Print/Remove"
+    ("p" "print by query" emado-print-suffix)
+    ("r" "remove by query" emado-remove-suffix)]
+   ["Field visibility"
+    ("o" "show only hidden fields" emado-flag-only)
+    ("N" "hide NAME field" emado-flag-name)
+    ("T" "hide TIME field" emado-flag-time)
+    ("I" "hide DEADLINE field" emado-flag-deadline)
+    ("P" "hide PRIORITY field" emado-flag-priority)
+    ("S" "hide STATUS field" emado-flag-status)
+    ("A" "hide TAGS field" emado-flag-tags)]
+  ["Misc"
+   ("q" "quit" transient-quit-one)])
 
 (provide 'emado)
 

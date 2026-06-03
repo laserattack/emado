@@ -210,11 +210,13 @@
   (interactive)
   (let ((args (transient-args 'emado-action-menu))
         (query (read-string "Query (remove): ")))
-    (let ((output (emado-run (append args (list "-r" query)))))
-      (if (string-empty-p (string-trim output))
-          (emado--display (format "Query (remove): %s\n\nNo entries found" query))
-        (emado--display (format "Query (remove): %s\n\n%s" query output))))
-    (transient-quit-one)))
+    (if (yes-or-no-p (format "Remove entries matching '%s'? " query))
+        (let ((output (emado-run (append args (list "-r" query)))))
+          (if (string-empty-p (string-trim output))
+              (emado--display (format "Query (remove): %s\n\nNo entries found" query))
+            (emado--display (format "Query (remove): %s\n\n%s" query output)))
+          (transient-quit-one))
+      (message "Removal cancelled"))))
 
 (transient-define-suffix emado-save-flags ()
   "Save current flags for this session."
@@ -234,7 +236,7 @@
   "Initialize MADO directory options."
   ["Actions"
    ("p" "Print by query" emado-print)
-   ("r" "Remove by query" emado-remove)]
+   ("R" "Remove by query" emado-remove)]
   ["Field visibility"
    ("o" "Show only hidden fields" emado-flag-only)
    ("N" "Hide NAME field" emado-flag-name)

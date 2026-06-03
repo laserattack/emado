@@ -76,8 +76,27 @@
         (when (string-match "/\\([0-9]\\{8\\}T[0-9]\\{6\\}\\)/" file)
           (let ((timestamp (match-string 1 file)))
             (if (yes-or-no-p (format "Delete entry %s? " timestamp))
-                (emado--display (emado-run (list "-r" (format "time = %s" timestamp))))
+                (progn
+                  (emado-run (list "-r" (format "time = %s" timestamp)))
+                  (let ((inhibit-read-only t))
+                    (delete-region (line-beginning-position) (line-beginning-position 2)))
+                  (message "Entry deleted"))
               (message "Deletion cancelled"))))))))
+
+(defun emado-repeat-query ()
+  "Repeat the last query shown in the current buffer."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (when (looking-at "^Query (\\(print\\|remove\\)): \\(.*\\)")
+      (let ((action (match-string 1))
+            (query (match-string 2))
+            (args (transient-args 'emado-action-menu)))
+        (message "Repeating query...")
+        (let ((output (emado-run (append args (list (format "-%c" (string-to-char action)) query)))))
+          (if (string-empty-p (string-trim output))
+              (emado--display (format "Query (%s): %s\n\nNo entries found" action query))
+            (emado--display (format "Query (%s): %s\n\n%s" action query output))))))))
 
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))
@@ -86,13 +105,16 @@
     (define-key map (kbd "q") 'emado-quit)
     (define-key map (kbd "RET") 'emado-open-file-at-point)
     (define-key map (kbd "d") 'emado-delete-entry-at-point)
+    (define-key map (kbd "g") 'emado-repeat-query)
     map)
   "Keymap for emado buffer.")
 
 (defconst emado-font-lock-keywords
   (list
-   '("^\\(/[^:\n]+:[0-9]+:[0-9]+:\\)" 1 'emado-field-face)
-   '("\\<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-field-face))
+   '("^\\(/[^:\n]+:[0-9]+:[0-9]+\\):" 1 'emado-field-face)
+   '("\\<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-field-face)
+   '("^\\(Query (print)\\):" 1 'emado-field-face)
+   '("^\\(Query (remove)\\):" 1 'emado-field-face))
   "Font lock keywords for emado-mode.")
 
 (define-derived-mode emado-mode fundamental-mode "Emado"
@@ -176,7 +198,10 @@
   (interactive)
   (let ((args (transient-args 'emado-action-menu))
         (query (read-string "Query (print): ")))
-    (emado--display (emado-run (append args (list "-p" query))))
+    (let ((output (emado-run (append args (list "-p" query)))))
+      (if (string-empty-p (string-trim output))
+          (emado--display (format "Query (print): %s\n\nNo entries found" query))
+        (emado--display (format "Query (print): %s\n\n%s" query output))))
     (transient-quit-one)))
 
 (transient-define-suffix emado-remove ()
@@ -184,7 +209,10 @@
   (interactive)
   (let ((args (transient-args 'emado-action-menu))
         (query (read-string "Query (remove): ")))
-    (emado--display (emado-run (append args (list "-r" query))))
+    (let ((output (emado-run (append args (list "-r" query)))))
+      (if (string-empty-p (string-trim output))
+          (emado--display (format "Query (remove): %s\n\nNo entries found" query))
+        (emado--display (format "Query (remove): %s\n\n%s" query output))))
     (transient-quit-one)))
 
 (transient-define-prefix emado-action-menu ()

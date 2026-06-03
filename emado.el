@@ -41,6 +41,17 @@
   (interactive)
   (quit-window))
 
+(defun emado--display (output)
+  "Display OUTPUT."
+  (let ((buf (get-buffer-create "*emado*")))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert output)
+        (goto-char (point-min))
+        (emado-mode)))
+    (pop-to-buffer buf)))
+
 (defun emado-open-file-at-point ()
   "Open file at current line."
   (interactive)
@@ -55,12 +66,26 @@
         (forward-line (1- line))
         (forward-char (1- col))))))
 
+(defun emado-delete-entry-at-point ()
+  "Delete entry at current line after confirmation."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (when (looking-at "^\\(.*\\):\\([0-9]+\\):\\([0-9]+\\):")
+      (let ((file (match-string 1)))
+        (when (string-match "/\\([0-9]\\{8\\}T[0-9]\\{6\\}\\)/" file)
+          (let ((timestamp (match-string 1 file)))
+            (if (yes-or-no-p (format "Delete entry %s? " timestamp))
+                (emado--display (emado-run (list "-r" (format "time = %s" timestamp))))
+              (message "Deletion cancelled"))))))))
+
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "n") 'emado-next-line)
     (define-key map (kbd "p") 'emado-previous-line)
     (define-key map (kbd "q") 'emado-quit)
     (define-key map (kbd "RET") 'emado-open-file-at-point)
+    (define-key map (kbd "d") 'emado-delete-entry-at-point)
     map)
   "Keymap for emado buffer.")
 
@@ -76,17 +101,6 @@
   (use-local-map emado-mode-map)
   (setq-local font-lock-defaults '(emado-font-lock-keywords t))
   (font-lock-mode 1))
-
-(defun emado--display (output)
-  "Display OUTPUT."
-  (let ((buf (get-buffer-create "*emado*")))
-    (with-current-buffer buf
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert output)
-        (goto-char (point-min))
-        (emado-mode)))
-    (pop-to-buffer buf)))
 
 ;;;###autoload
 (defun emado-run (args &optional directory)

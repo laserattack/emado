@@ -96,7 +96,8 @@
         (let ((output (emado-run (append args (list (format "-%c" (string-to-char action)) query)))))
           (if (string-empty-p (string-trim output))
               (emado--display (format "Query (%s): %s\n\nNo entries found" action query))
-            (emado--display (format "Query (%s): %s\n\n%s" action query output))))))))
+            (emado--display (format "Query (%s): %s\n\n%s" action query output)))
+          (message "Query repeated"))))))
 
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))
@@ -215,12 +216,26 @@
         (emado--display (format "Query (remove): %s\n\n%s" query output))))
     (transient-quit-one)))
 
+(transient-define-suffix emado-save-flags ()
+  "Save current flags for this session."
+  :transient t
+  (interactive)
+  (transient-set)
+  (message "Flags saved for this session"))
+
+(transient-define-suffix emado-reset-flags ()
+  "Reset all flags to default."
+  :transient t
+  (interactive)
+  (transient-reset)
+  (message "All flags reset"))
+
 (transient-define-prefix emado-action-menu ()
   "Initialize MADO directory options."
   ["Actions"
    ("p" "Print by query" emado-print)
    ("r" "Remove by query" emado-remove)]
-  ["Field visibility flags"
+  ["Field visibility"
    ("o" "Show only hidden fields" emado-flag-only)
    ("N" "Hide NAME field" emado-flag-name)
    ("T" "Hide TIME field" emado-flag-time)
@@ -228,6 +243,9 @@
    ("P" "Hide PRIORITY field" emado-flag-priority)
    ("S" "Hide STATUS field" emado-flag-status)
    ("A" "Hide TAGS field" emado-flag-tags)]
+  ["Save/Reset"
+   ("s" "Memorize all flags" emado-save-flags)
+   ("r" "Reset all flags" emado-reset-flags)]
   ["Misc"
    ("q" "Quit" transient-quit-one)])
 

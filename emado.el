@@ -43,12 +43,14 @@
 
 (defun emado--display (output)
   "Display OUTPUT."
-  (let ((buf (get-buffer-create "*emado*")))
+  (let ((buf (get-buffer-create "*emado*"))
+        (dir default-directory))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
         (insert output)
         (goto-char (point-min))
+        (setq-local default-directory dir)
         (emado-mode)))
     (pop-to-buffer buf)))
 
@@ -107,6 +109,10 @@
     (define-key map (kbd "RET") 'emado-open-file-at-point)
     (define-key map (kbd "d") 'emado-delete-entry-at-point)
     (define-key map (kbd "g") 'emado-repeat-query)
+    (define-key map (kbd "h") 'emado-menu)
+    (define-key map (kbd "a") 'emado-action-menu)
+    (define-key map (kbd "N") 'emado-new)
+    (define-key map (kbd "i") 'emado-init-menu)
     map)
   "Keymap for emado buffer.")
 
@@ -115,7 +121,10 @@
    '("^\\(/[^:\n]+:[0-9]+:[0-9]+\\):" 1 'emado-field-face)
    '("\\<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-field-face)
    '("^\\(Query (print)\\):" 1 'emado-field-face)
-   '("^\\(Query (remove)\\):" 1 'emado-field-face))
+   '("^\\(Query (remove)\\):" 1 'emado-field-face)
+   '("^\\(Main directory\\):" 1 'emado-field-face)
+   '("^\\(Entries count\\):" 1 'emado-field-face)
+   )
   "Font lock keywords for emado-mode.")
 
 (define-derived-mode emado-mode fundamental-mode "Emado"
@@ -218,6 +227,13 @@
           (transient-quit-one))
       (message "Removal cancelled"))))
 
+(transient-define-suffix emado-info ()
+  "Show repository information."
+  (interactive)
+  (let ((args (transient-args 'emado-menu)))
+    (emado--display (emado-run (append args (list "-V"))))
+    (transient-quit-one)))
+
 (transient-define-suffix emado-save-flags ()
   "Save current flags for this session."
   :transient t
@@ -265,9 +281,10 @@
   "Mado entry manager."
   ["Commands"
    ("a" "Action" emado-action-menu)
-   ("n" "Create new entry" emado-new)
+   ("N" "Create new entry" emado-new)
    ("i" "Initialize main directory" emado-init-menu)]
   ["Misc"
+   ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])
 
 (provide 'emado)

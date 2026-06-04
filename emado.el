@@ -159,6 +159,7 @@
    ("i" "Initialize main directory" emado-init)
    ("F" "Force initialize (even if exists above)" emado-flag-force)]
   ["Misc"
+   ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])
 
 ;; emado action menu
@@ -265,6 +266,7 @@
    ("s" "Memorize all flags" emado-save-flags)
    ("r" "Reset all flags" emado-reset-flags)]
   ["Misc"
+   ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])
 
 ;; emado main menu

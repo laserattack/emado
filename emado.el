@@ -142,9 +142,11 @@
 (transient-define-suffix emado-init ()
   "Initialize main directory in current location."
   (interactive)
-  (let ((args (transient-args 'emado-init-menu)))
-    (emado--display (emado-run (append args (list "-i"))))
-    (transient-quit-one)))
+  (if (yes-or-no-p "Initialize main directory here? ")
+      (let ((args (transient-args 'emado-init-menu)))
+        (emado--display (emado-run (append args (list "-i"))))
+        (transient-quit-one))
+    (message "Initialization cancelled")))
 
 (transient-define-prefix emado-init-menu ()
   "Initialize MADO directory options."
@@ -247,7 +249,7 @@
   "Initialize MADO directory options."
   ["Commands"
    ("p" "Print by query" emado-print)
-   ("R" "Remove by query" emado-remove)]
+   ("r" "Remove by query" emado-remove)]
   ["Field visibility options"
    ("o" "Show only hidden fields" emado-flag-only)
    ("N" "Hide NAME field" emado-flag-name)
@@ -258,7 +260,7 @@
    ("A" "Hide TAGS field" emado-flag-tags)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
-   ("r" "Reset all options" emado-reset-flags)]
+   ("R" "Reset all options" emado-reset-flags)]
   ["Misc"
    ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])
@@ -283,12 +285,12 @@
 (transient-define-prefix emado-new-menu ()
   "Create new MADO entry options."
   ["Commands"
-   ("c" "Create new entry" emado-new)]
+   ("n" "Create new entry" emado-new)]
   ["Options"
    ("t" "Template" emado-flag-template)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
-   ("r" "Reset all options" emado-reset-flags)]
+   ("R" "Reset all options" emado-reset-flags)]
   ["Misc"
    ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])

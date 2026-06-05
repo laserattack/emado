@@ -1,4 +1,4 @@
 - NAME: request confirmation during repository initialization
 - PRIORITY: 100
 - TAGS: feat, ux
-- STATUS: opened
+- STATUS: closed

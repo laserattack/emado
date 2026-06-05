@@ -1,4 +1,4 @@
 - NAME: menu for N action (templates)
 - PRIORITY: 50
 - TAGS: feat, ux, menu
-- STATUS: opened
+- STATUS: closed

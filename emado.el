@@ -15,12 +15,6 @@
   :type 'string
   :group 'emado)
 
-(defcustom emado-directory nil
-  "Default project directory for mado. If nil, use current directory."
-  :type '(choice (const :tag "Current directory" nil)
-                 (directory :tag "Project root"))
-  :group 'emado)
-
 (defface emado-field-face
   '((t :foreground "unspecified" :weight normal))
   "Face for highlighting field names and paths."
@@ -111,7 +105,7 @@
     (define-key map (kbd "g") 'emado-repeat-query)
     (define-key map (kbd "h") 'emado-menu)
     (define-key map (kbd "a") 'emado-action-menu)
-    (define-key map (kbd "N") 'emado-new)
+    (define-key map (kbd "c") 'emado-new-menu)
     (define-key map (kbd "i") 'emado-init-menu)
     map)
   "Keymap for emado buffer.")
@@ -138,7 +132,6 @@
 (defun emado-run (args &optional directory)
   "Run mado with ARGS (list of strings) in DIRECTORY."
   (let ((default-directory (or directory
-                               emado-directory
                                default-directory)))
     (with-output-to-string
       (with-current-buffer standard-output
@@ -156,7 +149,8 @@
 (transient-define-prefix emado-init-menu ()
   "Initialize MADO directory options."
   ["Initialize"
-   ("i" "Initialize main directory" emado-init)
+   ("i" "Initialize main directory" emado-init)]
+  ["Options"
    ("F" "Force initialize (even if exists above)" emado-flag-force)]
   ["Misc"
    ("h" "Repository info" emado-info)
@@ -251,10 +245,10 @@
 
 (transient-define-prefix emado-action-menu ()
   "Initialize MADO directory options."
-  ["Actions"
+  ["Commands"
    ("p" "Print by query" emado-print)
    ("R" "Remove by query" emado-remove)]
-  ["Field visibility"
+  ["Field visibility options"
    ("o" "Show only hidden fields" emado-flag-only)
    ("N" "Hide NAME field" emado-flag-name)
    ("T" "Hide TIME field" emado-flag-time)
@@ -263,27 +257,49 @@
    ("S" "Hide STATUS field" emado-flag-status)
    ("A" "Hide TAGS field" emado-flag-tags)]
   ["Save/Reset"
-   ("s" "Memorize all flags" emado-save-flags)
-   ("r" "Reset all flags" emado-reset-flags)]
+   ("s" "Memorize all options" emado-save-flags)
+   ("r" "Reset all options" emado-reset-flags)]
+  ["Misc"
+   ("h" "Repository info" emado-info)
+   ("q" "Quit" transient-quit-one)])
+
+;; emado new entry menu
+
+(transient-define-infix emado-flag-template ()
+  "Template name for new entry."
+  :class 'transient-option
+  :argument "-t"
+  :reader (lambda (prompt initial-input history)
+            (read-string "Template name: " initial-input history)))
+
+(transient-define-suffix emado-new ()
+  "Create new entry."
+  (interactive)
+  (when (yes-or-no-p "Create new entry? ")
+    (let ((args (transient-args 'emado-new-menu)))
+      (emado--display (emado-run (append args (list "-n"))))
+      (transient-quit-one))))
+
+(transient-define-prefix emado-new-menu ()
+  "Create new MADO entry options."
+  ["Commands"
+   ("c" "Create new entry" emado-new)]
+  ["Options"
+   ("t" "Template" emado-flag-template)]
+  ["Save/Reset"
+   ("s" "Memorize all options" emado-save-flags)
+   ("r" "Reset all options" emado-reset-flags)]
   ["Misc"
    ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])
 
 ;; emado main menu
 
-(transient-define-suffix emado-new ()
-  "Create new entry."
-  (interactive)
-  (when (yes-or-no-p "Create new entry? ")
-    (let ((args (transient-args 'emado-menu)))
-      (emado--display (emado-run (append args (list "-n"))))
-      (transient-quit-one))))
-
 (transient-define-prefix emado-menu ()
   "Mado entry manager."
   ["Commands"
    ("a" "Action" emado-action-menu)
-   ("N" "Create new entry" emado-new)
+   ("c" "Create new entry" emado-new-menu)
    ("i" "Initialize main directory" emado-init-menu)]
   ["Misc"
    ("h" "Repository info" emado-info)

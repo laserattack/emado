@@ -146,6 +146,20 @@
   :reader (lambda (prompt initial-input history)
             (expand-file-name (read-string "Directory path: " initial-input history))))
 
+(transient-define-infix emado-flag-main-dir ()
+  "Custom main directory name instead of 'MADO' (-D)."
+  :class 'transient-option
+  :argument "-D"
+  :reader (lambda (prompt initial-input history)
+            (read-string "Main directory name: " initial-input history)))
+
+(transient-define-infix emado-flag-entry-file ()
+  "Custom entry file name instead of 'MAIN' (-E)."
+  :class 'transient-option
+  :argument "-E"
+  :reader (lambda (prompt initial-input history)
+            (read-string "Entry file name: " initial-input history)))
+
 ;; emado init menu
 
 (transient-define-suffix emado-init ()
@@ -163,6 +177,8 @@
    ("i" "Initialize main directory" emado-init)]
   ["Options"
    ("F" "Force initialize (even if exists above)" emado-flag-force)
+   ("D" "Custom main directory name" emado-flag-main-dir)
+   ("E" "Custom entry file name" emado-flag-entry-file)
    ("C" "Change cwd before any operations" emado-flag-path)]
   ["Misc"
    ("h" "Repository info" emado-info)
@@ -271,6 +287,8 @@
   [("o" "Show only hidden fields" emado-flag-only)]
   ["Other options"
    ("L" "Max header lines to scan for fields" emado-flag-max-lines)
+   ("D" "Custom main directory name" emado-flag-main-dir)
+   ("E" "Custom entry file name" emado-flag-entry-file)
    ("C" "Change cwd before any operations" emado-flag-path)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
@@ -310,6 +328,8 @@
    ("n" "Create new entry" emado-new)]
   ["Options"
    ("t" "Template" emado-flag-template)
+   ("D" "Custom main directory name" emado-flag-main-dir)
+   ("E" "Custom entry file name" emado-flag-entry-file)
    ("C" "Change cwd before any operations" emado-flag-path)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)

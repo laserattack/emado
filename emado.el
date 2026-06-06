@@ -143,7 +143,9 @@
   :class 'transient-option
   :argument "-C"
   :reader (lambda (prompt initial-input history)
-            (expand-file-name (read-string "Directory path: " initial-input history))))
+            (expand-file-name
+             (read-directory-name "Directory path: "
+                                  nil initial-input t))))
 
 (transient-define-infix emado-flag-main-dir ()
   "Custom main directory name instead of 'MADO' (-D)."

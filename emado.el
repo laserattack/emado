@@ -20,7 +20,7 @@
 Set this once and all operations will use it.")
 
 (defface emado-field-face
-  '((t :foreground "unspecified" :weight normal))
+  '((t :foreground "#dcaf79" :weight bold))
   "Face for highlighting field names and paths."
   :group 'emado)
 
@@ -133,7 +133,6 @@ Set this once and all operations will use it.")
   (setq-local font-lock-defaults '(emado-font-lock-keywords t))
   (font-lock-mode 1))
 
-;;;###autoload
 (defun emado-run (args &optional directory)
   "Run mado with ARGS (list of strings) in DIRECTORY."
   (let ((default-directory (or directory

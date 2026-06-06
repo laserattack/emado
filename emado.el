@@ -67,17 +67,16 @@
   (interactive)
   (save-excursion
     (beginning-of-line)
-    (when (looking-at "^\\(.*\\):\\([0-9]+\\):\\([0-9]+\\):")
-      (let ((file (match-string 1)))
-        (when (string-match "/\\([0-9]\\{8\\}T[0-9]\\{6\\}\\)/" file)
-          (let ((timestamp (match-string 1 file)))
-            (if (yes-or-no-p (format "Delete entry %s? " timestamp))
-                (progn
-                  (emado-run (list "-r" (format "time = %s" timestamp)))
-                  (let ((inhibit-read-only t))
-                    (delete-region (line-beginning-position) (line-beginning-position 2)))
-                  (message "Entry deleted"))
-              (message "Deletion cancelled"))))))))
+    (when (looking-at "^\\(.*\\)/\\([0-9]\\{8\\}T[0-9]\\{6\\}\\)/")
+      (let ((timestamp (match-string 2))
+            (full-dir (concat (match-string 1) "/" (match-string 2))))
+        (if (yes-or-no-p (format "Delete entry %s? " timestamp))
+            (progn
+              (delete-directory full-dir t)
+              (let ((inhibit-read-only t))
+                (delete-region (line-beginning-position) (line-beginning-position 2)))
+              (message "Entry deleted"))
+          (message "Deletion cancelled"))))))
 
 (defun emado-repeat-query ()
   "Repeat the last query shown in the current buffer."

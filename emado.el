@@ -137,6 +137,15 @@
       (with-current-buffer standard-output
         (apply #'call-process emado-executable nil t nil args)))))
 
+;; common flags for different menus
+
+(transient-define-infix emado-flag-path ()
+  "Change working directory before operations (-C)."
+  :class 'transient-option
+  :argument "-C"
+  :reader (lambda (prompt initial-input history)
+            (expand-file-name (read-string "Directory path: " initial-input history))))
+
 ;; emado init menu
 
 (transient-define-suffix emado-init ()
@@ -153,7 +162,8 @@
   ["Initialize"
    ("i" "Initialize main directory" emado-init)]
   ["Options"
-   ("F" "Force initialize (even if exists above)" emado-flag-force)]
+   ("F" "Force initialize (even if exists above)" emado-flag-force)
+   ("C" "Change cwd before any operations" emado-flag-path)]
   ["Misc"
    ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])
@@ -251,13 +261,16 @@
    ("p" "Print by query" emado-print)
    ("r" "Remove by query" emado-remove)]
   ["Field visibility options"
+   :class transient-columns
+   [("N" "Hide NAME" emado-flag-name)
+    ("T" "Hide TIME" emado-flag-time)]
+   [("I" "Hide DEADLINE" emado-flag-deadline)
+    ("P" "Hide PRIORITY" emado-flag-priority)]
+   [("S" "Hide STATUS" emado-flag-status)
+    ("A" "Hide TAGS" emado-flag-tags)]]
+  ["Other options"
    ("o" "Show only hidden fields" emado-flag-only)
-   ("N" "Hide NAME field" emado-flag-name)
-   ("T" "Hide TIME field" emado-flag-time)
-   ("I" "Hide DEADLINE field" emado-flag-deadline)
-   ("P" "Hide PRIORITY field" emado-flag-priority)
-   ("S" "Hide STATUS field" emado-flag-status)
-   ("A" "Hide TAGS field" emado-flag-tags)]
+   ("C" "Change cwd before any operations" emado-flag-path)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
    ("R" "Reset all options" emado-reset-flags)]
@@ -288,7 +301,8 @@
   ["Commands"
    ("n" "Create new entry" emado-new)]
   ["Options"
-   ("t" "Template" emado-flag-template)]
+   ("t" "Template" emado-flag-template)
+   ("C" "Change cwd before any operations" emado-flag-path)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
    ("R" "Reset all options" emado-reset-flags)]

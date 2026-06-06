@@ -15,6 +15,10 @@
   :type 'string
   :group 'emado)
 
+(defvar emado-working-directory nil
+  "Working directory for mado operations.
+Set this once and all operations will use it.")
+
 (defface emado-field-face
   '((t :foreground "unspecified" :weight normal))
   "Face for highlighting field names and paths."
@@ -106,6 +110,8 @@
     (define-key map (kbd "a") 'emado-action-menu)
     (define-key map (kbd "c") 'emado-new-menu)
     (define-key map (kbd "i") 'emado-init-menu)
+    (define-key map (kbd "w") 'emado-set-working-directory)
+    (define-key map (kbd "W") 'emado-clear-working-directory)
     map)
   "Keymap for emado buffer.")
 
@@ -131,21 +137,13 @@
 (defun emado-run (args &optional directory)
   "Run mado with ARGS (list of strings) in DIRECTORY."
   (let ((default-directory (or directory
+                               emado-working-directory
                                default-directory)))
     (with-output-to-string
       (with-current-buffer standard-output
         (apply #'call-process emado-executable nil t nil args)))))
 
 ;; common flags for different menus
-
-(transient-define-infix emado-flag-path ()
-  "Change working directory before operations (-C)."
-  :class 'transient-option
-  :argument "-C"
-  :reader (lambda (prompt initial-input history)
-            (expand-file-name
-             (read-directory-name "Directory path: "
-                                  nil initial-input t))))
 
 (transient-define-infix emado-flag-main-dir ()
   "Custom main directory name instead of 'MADO' (-D)."
@@ -179,8 +177,7 @@
   ["Options"
    ("F" "Force initialize (even if exists above)" emado-flag-force)
    ("D" "Custom main directory name" emado-flag-main-dir)
-   ("E" "Custom entry file name" emado-flag-entry-file)
-   ("C" "Change cwd before any operations" emado-flag-path)]
+   ("E" "Custom entry file name" emado-flag-entry-file)]
   ["Misc"
    ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])
@@ -289,8 +286,7 @@
   ["Other options"
    ("L" "Max header lines to scan for fields" emado-flag-max-lines)
    ("D" "Custom main directory name" emado-flag-main-dir)
-   ("E" "Custom entry file name" emado-flag-entry-file)
-   ("C" "Change cwd before any operations" emado-flag-path)]
+   ("E" "Custom entry file name" emado-flag-entry-file)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
    ("R" "Reset all options" emado-reset-flags)]
@@ -330,8 +326,7 @@
   ["Options"
    ("t" "Template" emado-flag-template)
    ("D" "Custom main directory name" emado-flag-main-dir)
-   ("E" "Custom entry file name" emado-flag-entry-file)
-   ("C" "Change cwd before any operations" emado-flag-path)]
+   ("E" "Custom entry file name" emado-flag-entry-file)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
    ("R" "Reset all options" emado-reset-flags)]
@@ -341,12 +336,35 @@
 
 ;; emado main menu
 
+(transient-define-suffix emado-set-working-directory ()
+  "Set working directory for mado operations."
+  :transient t
+  (interactive)
+  (let ((dir (read-directory-name "Set working directory: " nil nil t)))
+    (setq emado-working-directory dir)
+    (message "Working directory set to: %s" dir)
+    (emado--display (emado-run (list "-V")))))
+
+(transient-define-suffix emado-clear-working-directory ()
+  "Clear working directory setting."
+  :transient t
+  (interactive)
+  (setq emado-working-directory nil)
+  (message "Working directory cleared, using default")
+  (emado--display (emado-run (list "-V"))))
+
 (transient-define-prefix emado-menu ()
   "Mado entry manager."
   ["Commands"
    ("a" "Action" emado-action-menu)
    ("c" "Create new entry" emado-new-menu)
    ("i" "Initialize main directory" emado-init-menu)]
+  ["Working directory"
+   (:info (lambda () (if emado-working-directory
+                         (format "Current working directory: %s" emado-working-directory)
+                       (format "Current working directory: %s" default-directory))))
+   ("w" "Set working directory" emado-set-working-directory)
+   ("W" "Clear working directory" emado-clear-working-directory)]
   ["Misc"
    ("h" "Repository info" emado-info)
    ("q" "Quit" transient-quit-one)])

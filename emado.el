@@ -268,8 +268,9 @@
     ("P" "Hide PRIORITY" emado-flag-priority)]
    [("S" "Hide STATUS" emado-flag-status)
     ("A" "Hide TAGS" emado-flag-tags)]]
+  [("o" "Show only hidden fields" emado-flag-only)]
   ["Other options"
-   ("o" "Show only hidden fields" emado-flag-only)
+   ("L" "Max header lines to scan for fields" emado-flag-max-lines)
    ("C" "Change cwd before any operations" emado-flag-path)]
   ["Save/Reset"
    ("s" "Memorize all options" emado-save-flags)
@@ -286,6 +287,13 @@
   :argument "-t"
   :reader (lambda (prompt initial-input history)
             (read-string "Template name: " initial-input history)))
+
+(transient-define-infix emado-flag-max-lines ()
+  "Max header lines to scan for fields (-L)."
+  :class 'transient-option
+  :argument "-L"
+  :reader (lambda (prompt initial-input history)
+            (read-string "Max header lines: " initial-input history)))
 
 (transient-define-suffix emado-new ()
   "Create new entry."

@@ -277,10 +277,11 @@
 (transient-define-suffix emado-new ()
   "Create new entry."
   (interactive)
-  (when (yes-or-no-p "Create new entry? ")
-    (let ((args (transient-args 'emado-new-menu)))
-      (emado--display (emado-run (append args (list "-n"))))
-      (transient-quit-one))))
+  (if (yes-or-no-p "Create new entry? ")
+      (let ((args (transient-args 'emado-new-menu)))
+        (emado--display (emado-run (append args (list "-n"))))
+        (transient-quit-one))
+    (message "Creation cancelled")))
 
 (transient-define-prefix emado-new-menu ()
   "Create new MADO entry options."

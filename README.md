@@ -1,4 +1,4 @@
-# emado - Emacs interface for mado
+# emado - Emacs interface for mado v1.0.0
 
 A pretty Emacs interface for
 [mado](https://github.com/laserattack/mado) - a markdown-based

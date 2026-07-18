@@ -17,6 +17,11 @@
 
 ;;; Buffer & Mode
 
+(defun emado-quit ()
+  "Close emado window and bury buffer."
+  (interactive)
+  (quit-window))
+
 (defun emado-next-line ()
   "Move to next logical line."
   (interactive)
@@ -29,7 +34,7 @@
 
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "q") #'quit-window)
+    (define-key map (kbd "q") #'emado-quit)
     (define-key map (kbd "g") #'emado-repeat-last)
     (define-key map (kbd "RET") #'emado-open-entry-at-point)
     (define-key map (kbd "n") 'emado-next-line)
@@ -97,8 +102,8 @@
   (if emado--last-args
       (progn
         (emado--display (emado--run emado--last-args))
-        (message "Repeated last emado command"))
-    (message "No previous emado command to repeat")))
+        (message "Repeated last mado command"))
+    (message "No previous mado command to repeat")))
 
 ;;; Transient menus
 
@@ -131,10 +136,11 @@
 ;; ---- New entry ----
 
 (transient-define-infix emado--flag-template ()
-  "Template for new entry (-t)."
+  "Template name for new entry (-t)."
   :class 'transient-option
   :argument "-t"
-  :reader #'transient-read-file
+  :reader (lambda (_prompt _initial _history)
+            (read-string "Template: "))
   :prompt "Template: ")
 
 (transient-define-prefix emado-new-menu ()

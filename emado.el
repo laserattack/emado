@@ -112,6 +112,20 @@ Set this once and all operations will use it.")
 
 ;;; Transient menus
 
+(transient-define-suffix emado-save-options ()
+  "Save current options for this session."
+  :transient t
+  (interactive)
+  (transient-set)
+  (message "Options saved for this session"))
+
+(transient-define-suffix emado-reset-options ()
+  "Reset all options to default."
+  :transient t
+  (interactive)
+  (transient-reset)
+  (message "All options reset"))
+
 ;; ---- Init ----
 
 (transient-define-infix emado--flag-force ()
@@ -125,6 +139,9 @@ Set this once and all operations will use it.")
    ("i" "Init" emado--init)]
   ["Options"
    ("F" "Force" emado--flag-force)]
+  ["Save/Reset"
+   ("S" "Save current options" emado-save-options)
+   ("R" "Reset all options" emado-reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
@@ -154,6 +171,9 @@ Set this once and all operations will use it.")
    ("n" "New entry" emado--new-entry)]
   ["Options"
    ("t" "Template" emado--flag-template)]
+  ["Save/Reset"
+   ("S" "Save current options" emado-save-options)
+   ("R" "Reset all options" emado-reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
@@ -182,9 +202,21 @@ Set this once and all operations will use it.")
   ["List"
    ("a" "All entries" emado--list-all)
    ("l" "List with query" emado--list-query)]
-  ["Options"
+  ["Main options"
    ("s" "Sort" emado--flag-sort)
    ("i" "Case-insensitive" "-i")]
+  ["Hide fields options"
+   ("o" "Only hidden" "-o")
+   ("n" "Hide name" "-n")
+   ("t" "Hide time" "-t")
+   ("d" "Hide deadline" "-d")
+   ("p" "Hide priority" "-p")
+   ("u" "Hide status" "-u")
+   ("g" "Hide tags" "-g")
+   ("h" "Hide path" "-h")]
+  ["Save/Reset"
+   ("S" "Save current options" emado-save-options)
+   ("R" "Reset all options" emado-reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
@@ -217,6 +249,9 @@ Set this once and all operations will use it.")
    ("r" "Remove by query" emado--remove-query)]
   ["Options"
    ("i" "Case-insensitive" "-i")]
+  ["Save/Reset"
+   ("S" "Save current options" emado-save-options)
+   ("R" "Reset all options" emado-reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 

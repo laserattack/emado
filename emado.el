@@ -128,17 +128,12 @@ Set this once and all operations will use it.")
 
 ;; ---- Init ----
 
-(transient-define-infix emado--flag-force ()
-  "Force init even if exists above (-F)."
-  :class 'transient-switch
-  :argument "--force")
-
 (transient-define-prefix emado-init-menu ()
   "Initialize mado repository."
   ["Initialize"
    ("i" "Init" emado--init)]
   ["Options"
-   ("F" "Force" emado--flag-force)]
+   ("f" "Try force init" "--force")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -160,7 +155,7 @@ Set this once and all operations will use it.")
 (transient-define-infix emado--flag-template ()
   "Template name for new entry (-t)."
   :class 'transient-option
-  :argument "-t"
+  :argument "--template"
   :reader (lambda (_prompt _initial _history)
             (read-string "Template: "))
   :prompt "Template: ")
@@ -192,7 +187,7 @@ Set this once and all operations will use it.")
 (transient-define-infix emado--flag-sort ()
   "Sort criteria (-s)."
   :class 'transient-option
-  :argument "-s"
+  :argument "--sort"
   :reader (lambda (prompt _initial _history)
             (read-string (concat prompt "(+/-field,...): ")))
   :prompt "Sort: ")
@@ -204,16 +199,16 @@ Set this once and all operations will use it.")
    ("l" "List with query" emado--list-query)]
   ["Main options"
    ("s" "Sort" emado--flag-sort)
-   ("i" "Case-insensitive" "-i")]
+   ("i" "Case-insensitive" "--ignore-case")]
   ["Hide fields options"
-   ("o" "Only hidden" "-o")
-   ("n" "Hide name" "-n")
-   ("t" "Hide time" "-t")
-   ("d" "Hide deadline" "-d")
-   ("p" "Hide priority" "-p")
-   ("u" "Hide status" "-u")
-   ("g" "Hide tags" "-g")
-   ("h" "Hide path" "-h")]
+   ("o" "Only hidden" "--only-hidden")
+   ("n" "Hide name" "--hide-name")
+   ("t" "Hide time" "--hide-time")
+   ("d" "Hide deadline" "--hide-deadline")
+   ("p" "Hide priority" "--hide-priority")
+   ("u" "Hide status" "--hide-status")
+   ("g" "Hide tags" "--hide-tags")
+   ("h" "Hide path" "--hide-path")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -248,7 +243,7 @@ Set this once and all operations will use it.")
   ["Remove"
    ("r" "Remove by query" emado--remove-query)]
   ["Options"
-   ("i" "Case-insensitive" "-i")]
+   ("i" "Case-insensitive" "--ignore-case")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]

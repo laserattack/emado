@@ -12,3 +12,8 @@ Add the following to your Emacs config:
 (require 'emado)
 (global-set-key (kbd "C-c e") 'emado-info)
 ```
+
+## Requirements
+
+- Emacs 28.1 or later
+- `mado` executable in `PATH`

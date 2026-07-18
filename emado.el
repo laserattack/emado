@@ -153,7 +153,7 @@ Set this once and all operations will use it.")
   ["Initialize"
    ("i" "Init" emado--init)]
   ["Options"
-   ("-f" "Try force init" "--force")]
+   ("f" "Try force init" "--force")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -185,7 +185,7 @@ Set this once and all operations will use it.")
   ["Create"
    ("e" "New entry" emado--new-entry)]
   ["Options"
-   ("-t" "Template" emado--flag-template)]
+   ("t" "Template" emado--flag-template)]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -218,17 +218,17 @@ Set this once and all operations will use it.")
    ("a" "All entries" emado--list-all)
    ("l" "List with query" emado--list-query)]
   ["Main options"
-   ("-s" "Sort" emado--flag-sort)
-   ("-i" "Case-insensitive" "--ignore-case")]
+   ("s" "Sort" emado--flag-sort)
+   ("i" "Case-insensitive" "--ignore-case")]
   ["Hide fields options"
-   ("-o" "Only hidden" "--only-hidden")
-   ("-n" "Hide name" "--hide-name")
-   ("-t" "Hide time" "--hide-time")
-   ("-d" "Hide deadline" "--hide-deadline")
-   ("-p" "Hide priority" "--hide-priority")
-   ("-u" "Hide status" "--hide-status")
-   ("-g" "Hide tags" "--hide-tags")
-   ("-h" "Hide path" "--hide-path")]
+   ("o" "Only hidden" "--only-hidden")
+   ("n" "Hide name" "--hide-name")
+   ("t" "Hide time" "--hide-time")
+   ("d" "Hide deadline" "--hide-deadline")
+   ("p" "Hide priority" "--hide-priority")
+   ("u" "Hide status" "--hide-status")
+   ("g" "Hide tags" "--hide-tags")
+   ("h" "Hide path" "--hide-path")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -263,7 +263,7 @@ Set this once and all operations will use it.")
   ["Remove"
    ("r" "Remove by query" emado--remove-query)]
   ["Options"
-   ("-i" "Case-insensitive" "--ignore-case")]
+   ("i" "Case-insensitive" "--ignore-case")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]

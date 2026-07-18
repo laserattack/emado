@@ -19,6 +19,24 @@
   "Working directory for mado operations.
 Set this once and all operations will use it.")
 
+;;; Custom classes for default values support
+
+(defclass emado--default-option (transient-option)
+  ((default-value :initarg :default-value :initform nil)))
+
+(cl-defmethod transient-init-value ((obj emado--default-option))
+  (let ((val (oref obj default-value)))
+    (when val
+      (oset obj value val))))
+
+(defclass emado--default-switch (transient-switch)
+  ((default-value :initarg :default-value :initform nil)))
+
+(cl-defmethod transient-init-value ((obj emado--default-switch))
+  (let ((val (oref obj default-value)))
+    (when val
+      (oset obj value (oref obj argument)))))
+
 ;;; Buffer & Mode
 
 (defun emado-quit ()
@@ -146,6 +164,30 @@ Set this once and all operations will use it.")
   (transient-reset)
   (message "All options reset"))
 
+(transient-define-infix emado--flag-sort ()
+  "Sort criteria (-s)."
+  :class 'emado--default-option
+  :default-value "-time"
+  :argument "--sort="
+  :reader (lambda (prompt _initial _history)
+            (read-string (concat prompt "(+/-field,...): ")))
+  :prompt "Sort: ")
+
+(transient-define-infix emado--flag-ignore-case ()
+  "Case-insensitive search (-i)."
+  :class 'emado--default-switch
+  :default-value t
+  :argument "--ignore-case"
+  :description "Case-insensitive")
+
+(transient-define-infix emado--flag-template ()
+  "Template name for new entry (-t)."
+  :class 'transient-option
+  :argument "--template="
+  :reader (lambda (_prompt _initial _history)
+            (read-string "Template: "))
+  :prompt "Template: ")
+
 ;; ---- Init ----
 
 (transient-define-prefix emado-init-menu ()
@@ -172,14 +214,6 @@ Set this once and all operations will use it.")
 
 ;; ---- New entry ----
 
-(transient-define-infix emado--flag-template ()
-  "Template name for new entry (-t)."
-  :class 'transient-option
-  :argument "--template="
-  :reader (lambda (_prompt _initial _history)
-            (read-string "Template: "))
-  :prompt "Template: ")
-
 (transient-define-prefix emado-new-menu ()
   "Create new mado entry."
   ["Create"
@@ -204,14 +238,6 @@ Set this once and all operations will use it.")
 
 ;; ---- List ----
 
-(transient-define-infix emado--flag-sort ()
-  "Sort criteria (-s)."
-  :class 'transient-option
-  :argument "--sort="
-  :reader (lambda (prompt _initial _history)
-            (read-string (concat prompt "(+/-field,...): ")))
-  :prompt "Sort: ")
-
 (transient-define-prefix emado-list-menu ()
   "List mado entries."
   ["List"
@@ -219,7 +245,7 @@ Set this once and all operations will use it.")
    ("l" "List with query" emado--list-query)]
   ["Main options"
    ("s" "Sort" emado--flag-sort)
-   ("i" "Case-insensitive" "--ignore-case")]
+   ("i" "Case-insensitive" emado--flag-ignore-case)]
   ["Hide fields options"
    ("o" "Only hidden" "--only-hidden")
    ("n" "Hide name" "--hide-name")
@@ -263,7 +289,7 @@ Set this once and all operations will use it.")
   ["Remove"
    ("r" "Remove by query" emado--remove-query)]
   ["Options"
-   ("i" "Case-insensitive" "--ignore-case")]
+   ("i" "Case-insensitive" emado--flag-ignore-case)]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]

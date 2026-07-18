@@ -22,9 +22,9 @@ Set this once and all operations will use it.")
 ;;; Buffer & Mode
 
 (defun emado-quit ()
-  "Close emado window and bury buffer."
+  "Close emado window and kill buffer."
   (interactive)
-  (quit-window))
+  (quit-window t))
 
 (defun emado-next-line ()
   "Move to next logical line."
@@ -314,7 +314,7 @@ Set this once and all operations will use it.")
   "Mado entry manager for Emacs."
   ["Working directory"
    (:info (lambda () (if emado-working-directory
-                         (format "Current: %s" emado-working-directory)
+                         (format "Current: %s (forced)" emado-working-directory)
                        (format "Current: %s" default-directory))))
    ("w" "Set directory"     emado-set-working-directory)
    ("W" "Clear directory"   emado-clear-working-directory)]

@@ -15,6 +15,10 @@
   :type 'string
   :group 'emado)
 
+(defvar emado-working-directory nil
+  "Working directory for mado operations.
+Set this once and all operations will use it.")
+
 ;;; Buffer & Mode
 
 (defun emado-quit ()
@@ -51,7 +55,7 @@
 (defconst emado-font-lock-keywords
   (list
    ;; Section headers: Main directory:, Entries count:, Statuses:, Tags:
-   '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\):" 1 'emado-face)
+   '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Hint\\):" 1 'emado-face)
    ;; Field labels: TIME:[...], NAME:[...], PRIORITY:[...], etc.
    '("\\_<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
    ;; File paths: path/to/MAIN.md:1:
@@ -71,9 +75,10 @@
 
 (defun emado--run (args)
   "Run mado with ARGS (list of strings) and return output string."
-  (with-output-to-string
-    (with-current-buffer standard-output
-      (apply #'call-process emado-executable nil t nil args))))
+  (let ((default-directory (or emado-working-directory default-directory)))
+    (with-output-to-string
+      (with-current-buffer standard-output
+        (apply #'call-process emado-executable nil t nil args)))))
 
 (defun emado--display (output)
   "Display OUTPUT in emado buffer."
@@ -102,33 +107,33 @@
   (if emado--last-args
       (progn
         (emado--display (emado--run emado--last-args))
-        (message "Repeated last mado command"))
-    (message "No previous mado command to repeat")))
+        (message "Repeated last command"))
+    (message "No previous command to repeat")))
 
 ;;; Transient menus
 
 ;; ---- Init ----
 
+(transient-define-infix emado--flag-force ()
+  "Force init even if exists above (-F)."
+  :class 'transient-switch
+  :argument "--force")
+
 (transient-define-prefix emado-init-menu ()
   "Initialize mado repository."
-  [["Initialize"
-    ("i" "Init here" emado--init-here)
-    ("F" "Force init here" emado--init-force)]
-   ["Quit"
-    ("q" "Quit" transient-quit-one)]])
+  ["Initialize"
+   ("i" "Init" emado--init)]
+  ["Options"
+   ("F" "Force" emado--flag-force)]
+  ["Quit"
+   ("q" "Quit" transient-quit-one)])
 
-(defun emado--init-here ()
+(defun emado--init ()
   "Run 'mado init'."
   (interactive)
-  (let ((args '("init")))
-    (emado--display (emado--run args))
-    (setq emado--last-args args))
-  (transient-quit-one))
-
-(defun emado--init-force ()
-  "Run 'mado init --force'."
-  (interactive)
-  (let ((args '("init" "--force")))
+  (let* ((transient-current-prefix 'emado-init-menu)
+         (targs (transient-args 'emado-init-menu))
+         (args (append '("init") targs)))
     (emado--display (emado--run args))
     (setq emado--last-args args))
   (transient-quit-one))
@@ -145,13 +150,12 @@
 
 (transient-define-prefix emado-new-menu ()
   "Create new mado entry."
-  [["Create"
-    ("n" "New entry" emado--new-entry)]
-   ["Options"
-    ("t" "Template" emado--flag-template)
-    ("a" "Absolute paths" "-a")]
-   ["Quit"
-    ("q" "Quit" transient-quit-one)]])
+  ["Create"
+   ("n" "New entry" emado--new-entry)]
+  ["Options"
+   ("t" "Template" emado--flag-template)]
+  ["Quit"
+   ("q" "Quit" transient-quit-one)])
 
 (defun emado--new-entry (&optional args)
   "Create new entry with optional ARGS."
@@ -175,15 +179,14 @@
 
 (transient-define-prefix emado-list-menu ()
   "List mado entries."
-  [["List"
-    ("a" "All entries" emado--list-all)
-    ("l" "List with query" emado--list-query)]
-   ["Options"
-    ("s" "Sort" emado--flag-sort)
-    ("A" "Absolute paths" "-a")
-    ("i" "Case-insensitive" "-i")]
-   ["Quit"
-    ("q" "Quit" transient-quit-one)]])
+  ["List"
+   ("a" "All entries" emado--list-all)
+   ("l" "List with query" emado--list-query)]
+  ["Options"
+   ("s" "Sort" emado--flag-sort)
+   ("i" "Case-insensitive" "-i")]
+  ["Quit"
+   ("q" "Quit" transient-quit-one)])
 
 (defun emado--list-entries (query &optional extra-args)
   "List entries matching QUERY with EXTRA-ARGS."
@@ -210,13 +213,12 @@
 
 (transient-define-prefix emado-remove-menu ()
   "Remove mado entries."
-  [["Remove"
-    ("r" "Remove by query" emado--remove-query)]
-   ["Options"
-    ("a" "Absolute paths" "-a")
-    ("i" "Case-insensitive" "-i")]
-   ["Quit"
-    ("q" "Quit" transient-quit-one)]])
+  ["Remove"
+   ("r" "Remove by query" emado--remove-query)]
+  ["Options"
+   ("i" "Case-insensitive" "-i")]
+  ["Quit"
+   ("q" "Quit" transient-quit-one)])
 
 (defun emado--remove-query ()
   "Remove entries matching a query."
@@ -238,19 +240,44 @@
     (emado--display (emado--run args))
     (setq emado--last-args args)))
 
+;; ---- Working directory ----
+
+(transient-define-suffix emado-set-working-directory ()
+  "Set working directory for mado operations."
+  :transient t
+  (interactive)
+  (let ((dir (read-directory-name "Working directory: " nil nil t)))
+    (setq emado-working-directory dir)
+    (message "Working directory set to: %s" dir)
+    (emado-info)))
+
+(transient-define-suffix emado-clear-working-directory ()
+  "Clear working directory setting."
+  :transient t
+  (interactive)
+  (setq emado-working-directory nil)
+  (message "Working directory cleared, using default")
+  (emado-info))
+
 ;; ---- Main Menu ----
 
 (transient-define-prefix emado-menu ()
   "Mado entry manager for Emacs."
+  ["Working directory"
+   (:info (lambda () (if emado-working-directory
+                         (format "Current: %s" emado-working-directory)
+                       (format "Current: %s" default-directory))))
+   ("w" "Set directory"     emado-set-working-directory)
+   ("W" "Clear directory"   emado-clear-working-directory)]
   [["Actions"
     ("l" "List entries"   emado-list-menu)
     ("n" "New entry"      emado-new-menu)
     ("r" "Remove entries" emado-remove-menu)]
    ["Repository"
     ("i" "Init"           emado-init-menu)
-    ("h" "Info"           emado-info)]
-   ["Quit"
-    ("q" "Quit"           transient-quit-one)]])
+    ("h" "Info"           emado-info)]]
+  ["Quit"
+   ("q" "Quit"           transient-quit-one)])
 
 ;;;###autoload
 (defun emado ()

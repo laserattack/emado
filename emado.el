@@ -51,6 +51,7 @@
    '("\\_<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
    ;; File paths: path/to/MAIN.md:1:
    '("^\\([^:\n]+\\):[0-9]+\\:" 1 'emado-face)
+   '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
    )
   "Font lock keywords for emado-mode.")
 
@@ -60,8 +61,6 @@
 
 ;;; Core helpers
 
-(defvar emado--last-command nil
-  "Last mado command for repeating.")
 (defvar emado--last-args nil
   "Last mado args for repeating.")
 
@@ -95,11 +94,11 @@
 (defun emado-repeat-last ()
   "Repeat the last mado command."
   (interactive)
-  (if emado--last-command
-      (let ((output (apply emado--last-command emado--last-args)))
-        (emado--display output)
-        (message "Repeated last command"))
-    (message "No previous command to repeat")))
+  (if emado--last-args
+      (progn
+        (emado--display (emado--run emado--last-args))
+        (message "Repeated last emado command"))
+    (message "No previous emado command to repeat")))
 
 ;;; Transient menus
 
@@ -116,13 +115,17 @@
 (defun emado--init-here ()
   "Run 'mado init'."
   (interactive)
-  (emado--display (emado--run '("init")))
+  (let ((args '("init")))
+    (emado--display (emado--run args))
+    (setq emado--last-args args))
   (transient-quit-one))
 
 (defun emado--init-force ()
   "Run 'mado init --force'."
   (interactive)
-  (emado--display (emado--run '("init" "--force")))
+  (let ((args '("init" "--force")))
+    (emado--display (emado--run args))
+    (setq emado--last-args args))
   (transient-quit-one))
 
 ;; ---- New entry ----
@@ -148,10 +151,10 @@
   "Create new entry with optional ARGS."
   (interactive)
   (let* ((transient-current-prefix 'emado-new-menu)
-         (targs (transient-args 'emado-new-menu)))
-    (emado--display (emado--run (append '("new") targs)))
-    (setq emado--last-command #'emado--run
-          emado--last-args (append '("new") targs)))
+         (targs (transient-args 'emado-new-menu))
+         (args (append '("new") targs)))
+    (emado--display (emado--run args))
+    (setq emado--last-args args))
   (transient-quit-one))
 
 ;; ---- List ----
@@ -182,8 +185,7 @@
          (targs (transient-args 'emado-list-menu))
          (args `("list" ,@targs ,@extra-args ,query)))
     (emado--display (emado--run args))
-    (setq emado--last-command #'emado--run
-          emado--last-args args)))
+    (setq emado--last-args args)))
 
 (defun emado--list-all ()
   "List all entries."
@@ -218,8 +220,7 @@
          (args `("remove" ,@targs ,query)))
     (when (yes-or-no-p (format "Really delete entries matching '%s'? " query))
       (emado--display (emado--run args))
-      (setq emado--last-command #'emado--run
-            emado--last-args args)))
+      (setq emado--last-args args)))
   (transient-quit-one))
 
 ;; ---- Info ----
@@ -229,8 +230,7 @@
   (interactive)
   (let ((args '("info")))
     (emado--display (emado--run args))
-    (setq emado--last-command #'emado--run
-          emado--last-args args)))
+    (setq emado--last-args args)))
 
 ;; ---- Main Menu ----
 

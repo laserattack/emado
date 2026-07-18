@@ -41,9 +41,14 @@ Set this once and all operations will use it.")
     (define-key map (kbd "q") #'emado-quit)
     (define-key map (kbd "g") #'emado-repeat-last)
     (define-key map (kbd "RET") #'emado-open-entry-at-point)
+    (define-key map (kbd "d") #'emado-delete-entry-at-point)
     (define-key map (kbd "n") 'emado-next-line)
     (define-key map (kbd "p") 'emado-previous-line)
     (define-key map (kbd "h") #'emado-menu)
+    (define-key map (kbd "l") #'emado-list-menu)
+    (define-key map (kbd "e") #'emado-new-menu)
+    (define-key map (kbd "i") #'emado-init-menu)
+    (define-key map (kbd "r") #'emado-remove-menu)
     map)
   "Keymap for emado buffer.")
 
@@ -101,6 +106,20 @@ Set this once and all operations will use it.")
         (find-file-other-window file)
         (goto-char (point-min))))))
 
+(defun emado-delete-entry-at-point ()
+  "Delete mado entry at current line after confirmation."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (when (looking-at "^\\([^:\n]+\\):\\([0-9]+\\):")
+      (let ((file (match-string 1))
+            (dir (file-name-directory (match-string 1))))
+        (when (and dir (yes-or-no-p (format "Delete entry %s? " dir)))
+          (delete-directory dir t)
+          (let ((inhibit-read-only t))
+            (delete-region (line-beginning-position) (line-beginning-position 2)))
+          (message "Entry deleted"))))))
+
 (defun emado-repeat-last ()
   "Repeat the last mado command."
   (interactive)
@@ -133,7 +152,7 @@ Set this once and all operations will use it.")
   ["Initialize"
    ("i" "Init" emado--init)]
   ["Options"
-   ("f" "Try force init" "--force")]
+   ("-f" "Try force init" "--force")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -155,7 +174,7 @@ Set this once and all operations will use it.")
 (transient-define-infix emado--flag-template ()
   "Template name for new entry (-t)."
   :class 'transient-option
-  :argument "--template"
+  :argument "--template="
   :reader (lambda (_prompt _initial _history)
             (read-string "Template: "))
   :prompt "Template: ")
@@ -163,9 +182,9 @@ Set this once and all operations will use it.")
 (transient-define-prefix emado-new-menu ()
   "Create new mado entry."
   ["Create"
-   ("n" "New entry" emado--new-entry)]
+   ("e" "New entry" emado--new-entry)]
   ["Options"
-   ("t" "Template" emado--flag-template)]
+   ("-t" "Template" emado--flag-template)]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -187,7 +206,7 @@ Set this once and all operations will use it.")
 (transient-define-infix emado--flag-sort ()
   "Sort criteria (-s)."
   :class 'transient-option
-  :argument "--sort"
+  :argument "--sort="
   :reader (lambda (prompt _initial _history)
             (read-string (concat prompt "(+/-field,...): ")))
   :prompt "Sort: ")
@@ -198,17 +217,17 @@ Set this once and all operations will use it.")
    ("a" "All entries" emado--list-all)
    ("l" "List with query" emado--list-query)]
   ["Main options"
-   ("s" "Sort" emado--flag-sort)
-   ("i" "Case-insensitive" "--ignore-case")]
+   ("-s" "Sort" emado--flag-sort)
+   ("-i" "Case-insensitive" "--ignore-case")]
   ["Hide fields options"
-   ("o" "Only hidden" "--only-hidden")
-   ("n" "Hide name" "--hide-name")
-   ("t" "Hide time" "--hide-time")
-   ("d" "Hide deadline" "--hide-deadline")
-   ("p" "Hide priority" "--hide-priority")
-   ("u" "Hide status" "--hide-status")
-   ("g" "Hide tags" "--hide-tags")
-   ("h" "Hide path" "--hide-path")]
+   ("-o" "Only hidden" "--only-hidden")
+   ("-n" "Hide name" "--hide-name")
+   ("-t" "Hide time" "--hide-time")
+   ("-d" "Hide deadline" "--hide-deadline")
+   ("-p" "Hide priority" "--hide-priority")
+   ("-u" "Hide status" "--hide-status")
+   ("-g" "Hide tags" "--hide-tags")
+   ("-h" "Hide path" "--hide-path")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -243,7 +262,7 @@ Set this once and all operations will use it.")
   ["Remove"
    ("r" "Remove by query" emado--remove-query)]
   ["Options"
-   ("i" "Case-insensitive" "--ignore-case")]
+   ("-i" "Case-insensitive" "--ignore-case")]
   ["Save/Reset"
    ("S" "Save current options" emado-save-options)
    ("R" "Reset all options" emado-reset-options)]
@@ -301,7 +320,7 @@ Set this once and all operations will use it.")
    ("W" "Clear directory"   emado-clear-working-directory)]
   [["Actions"
     ("l" "List entries"   emado-list-menu)
-    ("n" "New entry"      emado-new-menu)
+    ("e" "New entry"      emado-new-menu)
     ("r" "Remove entries" emado-remove-menu)]
    ["Repository"
     ("i" "Init"           emado-init-menu)

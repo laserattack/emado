@@ -65,7 +65,7 @@ Set this once and all operations will use it.")
     (define-key map (kbd "p") 'emado-previous-line)
     (define-key map (kbd "h") #'emado-menu)
     (define-key map (kbd "l") #'emado-list-menu)
-    (define-key map (kbd "e") #'emado-new-menu)
+    (define-key map (kbd "c") #'emado-new-menu)
     (define-key map (kbd "i") #'emado-init-menu)
     (define-key map (kbd "r") #'emado-remove-menu)
     (define-key map (kbd "w") #'emado-set-working-directory)
@@ -219,7 +219,7 @@ Set this once and all operations will use it.")
 (transient-define-prefix emado-new-menu ()
   "Create new mado entry."
   ["Create"
-   ("e" "New entry" emado--new-entry)]
+   ("c" "New entry" emado--new-entry)]
   ["Options"
    ("t" "Template" emado--flag-template)]
   ["Save/Reset"
@@ -349,7 +349,7 @@ Set this once and all operations will use it.")
    ("W" "Clear directory"   emado-clear-working-directory)]
   [["Actions"
     ("l" "List entries"   emado-list-menu)
-    ("e" "New entry"      emado-new-menu)
+    ("c" "New entry"      emado-new-menu)
     ("r" "Remove entries" emado-remove-menu)]
    ["Repository"
     ("i" "Init"           emado-init-menu)

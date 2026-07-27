@@ -169,7 +169,7 @@ Set this once and all operations will use it.")
 (transient-define-infix emado--flag-sort ()
   "Sort criteria (-s)."
   :class 'emado--default-option
-  :default-value "-time"
+  :default-value "-priority,-time"
   :argument "--sort="
   :reader (lambda (prompt _initial _history)
             (read-string (concat prompt "(+/-field,...): ")))

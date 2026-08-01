@@ -19,6 +19,11 @@
   "Working directory for mado operations.
 Set this once and all operations will use it.")
 
+(defun emado-customize ()
+  "Open customization group for emado."
+  (interactive)
+  (customize-group 'emado))
+
 ;;; Custom classes for default values support
 
 (defclass emado--default-option (transient-option)
@@ -42,7 +47,7 @@ Set this once and all operations will use it.")
 (defun emado-quit ()
   "Close emado window and kill buffer."
   (interactive)
-  (quit-window t))
+  (kill-buffer-and-window))
 
 (defun emado-next-line ()
   "Move to next logical line."
@@ -75,7 +80,7 @@ Set this once and all operations will use it.")
 
 (defface emado-face
   '((t :foreground "#dcaf79" :weight bold))
-  "Face for highlighting field names."
+  "Face for highlighting."
   :group 'emado)
 
 (defconst emado-font-lock-keywords
@@ -112,7 +117,9 @@ Set this once and all operations will use it.")
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
-        (insert output)
+        (if (string-empty-p output)
+            (insert "Nothing here but us chickens")
+          (insert output))
         (goto-char (point-min))
         (emado-mode)))
     (pop-to-buffer buf)))
@@ -120,26 +127,27 @@ Set this once and all operations will use it.")
 (defun emado-open-entry-at-point ()
   "Open mado entry at current line."
   (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (when (looking-at "^\\([^:\n]+\\):\\([0-9]+\\):")
-      (let ((file (match-string 1)))
-        (find-file-other-window file)
-        (goto-char (point-min))))))
+  (beginning-of-line)
+  (when (looking-at "^\\([^:\n]+\\):\\([0-9]+\\):")
+    (let ((file (match-string 1)))
+      (find-file-other-window file)
+      (goto-char (point-min)))))
 
 (defun emado-delete-entry-at-point ()
   "Delete mado entry at current line after confirmation."
   (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (when (looking-at "^\\([^:\n]+\\):\\([0-9]+\\):")
-      (let ((file (match-string 1))
-            (dir (file-name-directory (match-string 1))))
-        (when (and dir (yes-or-no-p (format "Delete entry %s? " dir)))
-          (delete-directory dir t)
-          (let ((inhibit-read-only t))
-            (delete-region (line-beginning-position) (line-beginning-position 2)))
-          (message "Entry deleted"))))))
+  (beginning-of-line)
+  (when (looking-at "^\\([^:\n]+\\):\\([0-9]+\\):")
+    (let ((dir (file-name-directory (match-string 1)))
+          (inhibit-read-only t))
+      (when (and dir (yes-or-no-p (format "Delete entry %s? " dir)))
+        (delete-directory dir t)
+        (delete-region (line-beginning-position) (line-beginning-position 2))
+        (when (string-empty-p (string-trim (buffer-string)))
+          (erase-buffer)
+          (insert "Nothing here but us chickens")
+          (goto-char (point-min)))
+        (message "Entry deleted")))))
 
 (defun emado-repeat-last ()
   "Repeat the last mado command."
@@ -152,14 +160,14 @@ Set this once and all operations will use it.")
 
 ;;; Transient menus
 
-(transient-define-suffix emado-save-options ()
+(transient-define-suffix emado--save-options ()
   "Save current options for this session."
   :transient t
   (interactive)
   (transient-set)
   (message "Options saved for this session"))
 
-(transient-define-suffix emado-reset-options ()
+(transient-define-suffix emado--reset-options ()
   "Reset all options to default."
   :transient t
   (interactive)
@@ -167,7 +175,7 @@ Set this once and all operations will use it.")
   (message "All options reset"))
 
 (transient-define-infix emado--flag-sort ()
-  "Sort criteria (-s)."
+  "Sort criteria."
   :class 'emado--default-option
   :default-value "-priority,-time"
   :argument "--sort="
@@ -176,14 +184,14 @@ Set this once and all operations will use it.")
   :prompt "Sort: ")
 
 (transient-define-infix emado--flag-ignore-case ()
-  "Case-insensitive search (-i)."
+  "Case-insensitive search."
   :class 'emado--default-switch
   :default-value t
   :argument "--ignore-case"
   :description "Case-insensitive")
 
 (transient-define-infix emado--flag-template ()
-  "Template name for new entry (-t)."
+  "Template name for new entry."
   :class 'transient-option
   :argument "--template="
   :reader (lambda (_prompt _initial _history)
@@ -199,8 +207,8 @@ Set this once and all operations will use it.")
   ["Options"
    ("f" "Try force init" "--force")]
   ["Save/Reset"
-   ("S" "Save current options" emado-save-options)
-   ("R" "Reset all options" emado-reset-options)]
+   ("S" "Save current options" emado--save-options)
+   ("R" "Reset all options" emado--reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
@@ -223,13 +231,13 @@ Set this once and all operations will use it.")
   ["Options"
    ("t" "Template" emado--flag-template)]
   ["Save/Reset"
-   ("S" "Save current options" emado-save-options)
-   ("R" "Reset all options" emado-reset-options)]
+   ("S" "Save current options" emado--save-options)
+   ("R" "Reset all options" emado--reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
-(defun emado--new-entry (&optional args)
-  "Create new entry with optional ARGS."
+(defun emado--new-entry ()
+  "Create new entry."
   (interactive)
   (let* ((transient-current-prefix 'emado-new-menu)
          (targs (transient-args 'emado-new-menu))
@@ -258,8 +266,8 @@ Set this once and all operations will use it.")
    ("g" "Hide tags" "--hide-tags")
    ("h" "Hide path" "--hide-path")]
   ["Save/Reset"
-   ("S" "Save current options" emado-save-options)
-   ("R" "Reset all options" emado-reset-options)]
+   ("S" "Save current options" emado--save-options)
+   ("R" "Reset all options" emado--reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
@@ -293,8 +301,8 @@ Set this once and all operations will use it.")
   ["Options"
    ("i" "Case-insensitive" emado--flag-ignore-case)]
   ["Save/Reset"
-   ("S" "Save current options" emado-save-options)
-   ("R" "Reset all options" emado-reset-options)]
+   ("S" "Save current options" emado--save-options)
+   ("R" "Reset all options" emado--reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
@@ -348,14 +356,16 @@ Set this once and all operations will use it.")
    ("w" "Set directory"     emado-set-working-directory)
    ("W" "Clear directory"   emado-clear-working-directory)]
   [["Actions"
-    ("l" "List entries"   emado-list-menu)
-    ("c" "New entry"      emado-new-menu)
-    ("r" "Remove entries" emado-remove-menu)]
+    ("l" "List entries"     emado-list-menu)
+    ("c" "New entry"        emado-new-menu)
+    ("r" "Remove entries"   emado-remove-menu)]
    ["Repository"
-    ("i" "Init"           emado-init-menu)
-    ("h" "Info"           emado-info)]]
-  ["Quit"
-   ("q" "Quit"           transient-quit-one)])
+    ("i" "Init"             emado-init-menu)
+    ("h" "Info"             emado-info)]]
+  [["Other"
+    ("C" "Customize"        emado-customize)]
+   ["Quit"
+    ("q" "Quit"             transient-quit-one)]])
 
 ;;;###autoload
 (defun emado ()

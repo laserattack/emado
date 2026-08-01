@@ -12,31 +12,9 @@ organized in one place
 
 ## Usage example
 
-### Searching for entries that match the query
-
 ![](./static/list_base.gif)
 
-### Create, search, delete
-
-The video also demonstrates the engine's substring-based keyword
-matching (for example: `de` match `deadline` keyword)
-
-![](./static/create_search_delete.gif)
-
-### Working directory
-
-By default, the notes directory is found by walking upward through the
-parent folders — similar to how Git looks for its `.git` folder. This
-is convenient when working with project-specific notes or tasks, but
-less so when you want to interact with a specific notes folder, like a
-global one for all your personal notes. There is an option to
-force-set the working directory manually
-
-![](./static/force_dir.gif)
-
-### Other...
-
-Other usage examples and detailed documentation are available in the
+Detailed documentation is available in the
 [mado](https://github.com/laserattack/mado) repository
 
 ## Installation

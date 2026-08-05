@@ -78,6 +78,7 @@ Set this once and all operations will use it.")
     (define-key map (kbd "r") #'emado-remove-menu)
     (define-key map (kbd "w") #'emado-set-working-directory)
     (define-key map (kbd "W") #'emado-clear-working-directory)
+    (define-key map (kbd "C") #'emado-customize)
     map)
   "Keymap for emado buffer.")
 

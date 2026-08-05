@@ -1,4 +1,4 @@
 - NAME: В название буффера добавлять какую то инфу о том где он открыт
 - PRIORITY: 55
 - TAGS: ux, buffer
-- STATUS: opened
+- STATUS: not sure

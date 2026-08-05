@@ -19,6 +19,9 @@
   "Working directory for mado operations.
 Set this once and all operations will use it.")
 
+(defvar emado--last-query nil
+  "Last query used for list or remove operations.")
+
 (defun emado-customize ()
   "Open customization group for emado."
   (interactive)
@@ -288,8 +291,15 @@ Set this once and all operations will use it.")
 (defun emado--list-query ()
   "List entries matching a custom query."
   (interactive)
-  (let ((query (read-string "Query: ")))
-    (emado--list-entries query))
+  (let* ((prompt (if emado--last-query
+                     (format "Query (default: %s): " emado--last-query)
+                   "Query: "))
+         (query (read-string prompt nil nil emado--last-query)))
+    (when (string-empty-p query)
+      (setq query emado--last-query))
+    (when (and query (not (string-empty-p query)))
+      (setq emado--last-query query)
+      (emado--list-entries query)))
   (transient-quit-one))
 
 ;; ---- Remove ----
@@ -309,12 +319,19 @@ Set this once and all operations will use it.")
 (defun emado--remove-query ()
   "Remove entries matching a query."
   (interactive)
-  (let* ((query (read-string "Remove entries matching: "))
+  (let* ((prompt (if emado--last-query
+                     (format "Remove entries matching query (default: %s): " emado--last-query)
+                   "Remove entries matching query: "))
+         (query (read-string prompt nil nil emado--last-query))
          (targs (transient-args 'emado-remove-menu))
          (args `("remove" "--abs-paths" ,@targs ,query)))
-    (when (yes-or-no-p (format "Really delete entries matching '%s'? " query))
-      (emado--display (emado--run args))
-      (setq emado--last-args args)))
+    (when (string-empty-p query)
+      (setq query emado--last-query))
+    (when (and query (not (string-empty-p query)))
+      (setq emado--last-query query)
+      (when (yes-or-no-p (format "Really delete entries matching '%s'? " query))
+        (emado--display (emado--run args))
+        (setq emado--last-args args))))
   (transient-quit-one))
 
 ;; ---- Info ----

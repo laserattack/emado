@@ -483,10 +483,10 @@ If no CALLBACK, just display output in emado buffer."
     ("q" "Quit" transient-quit-one)]])
 
 ;;;###autoload
-(defun emado ()
-  "Start the mado entry manager."
+(defun emado-default-bindings ()
+  "Set default global keybindings for emado."
   (interactive)
-  (emado-menu))
+  (global-set-key (kbd "C-c e") 'emado-info))
 
 (provide 'emado)
 ;;; emado.el ends here

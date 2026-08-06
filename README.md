@@ -24,7 +24,7 @@ To install, copy `emado.el` to a directory in your Emacs
 
 ```elisp
 (require 'emado)
-(global-set-key (kbd "C-c e") 'emado-info)
+(emado-default-bindings)
 ```
 
 ## Requirements

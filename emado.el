@@ -16,6 +16,11 @@
   :type 'string
   :group 'emado)
 
+(defcustom emado-auto-switch t
+  "If non-nil, automatically switch to emado buffer after command finishes."
+  :type 'boolean
+  :group 'emado)
+
 (defvar emado-working-directory nil
   "Working directory for mado operations.
 Set this once and all operations will use it.")
@@ -172,7 +177,12 @@ If no CALLBACK, just display output in emado buffer."
         (insert message)
         (goto-char (point-min))
         (emado-mode)))
-    (pop-to-buffer buf)))
+    (if emado-auto-switch
+        (pop-to-buffer buf)
+      (let ((win (get-buffer-window buf)))
+        (if win
+            (set-window-buffer win buf)
+          (display-buffer buf))))))
 
 (defun emado--display (output)
   "Display OUTPUT in emado buffer."
@@ -185,7 +195,12 @@ If no CALLBACK, just display output in emado buffer."
           (insert output))
         (goto-char (point-min))
         (emado-mode)))
-    (pop-to-buffer buf)))
+    (if emado-auto-switch
+        (pop-to-buffer buf)
+      (let ((win (get-buffer-window buf)))
+        (if win
+            (set-window-buffer win buf)
+          (display-buffer buf))))))
 
 (defun emado-open-entry-at-point ()
   "Open mado entry at current line."

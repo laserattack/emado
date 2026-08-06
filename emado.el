@@ -107,7 +107,25 @@ Set this once and all operations will use it.")
 
 (define-derived-mode emado-mode special-mode "Emado"
   "Major mode for viewing mado output."
-  (setq-local font-lock-defaults '(emado-font-lock-keywords t)))
+  (setq-local font-lock-defaults '(emado-font-lock-keywords t))
+  (unless (get-buffer-window "*emado*")
+    (message (concat "Commands: "
+                     (propertize "n" 'face 'emado-face) ", "
+                     (propertize "p" 'face 'emado-face) ", "
+                     (propertize "RET" 'face 'emado-face) ", "
+                     (propertize "g" 'face 'emado-face) ", "
+                     (propertize "d" 'face 'emado-face) ", "
+                     (propertize "k" 'face 'emado-face) ", "
+                     (propertize "l" 'face 'emado-face) ", "
+                     (propertize "c" 'face 'emado-face) ", "
+                     (propertize "i" 'face 'emado-face) ", "
+                     (propertize "r" 'face 'emado-face) ", "
+                     (propertize "h" 'face 'emado-face) ", "
+                     (propertize "w" 'face 'emado-face) ", "
+                     (propertize "W" 'face 'emado-face) ", "
+                     (propertize "C" 'face 'emado-face) "; "
+                     (propertize "q" 'face 'emado-face) " to quit; "
+                     (propertize "h" 'face 'emado-face) " for help"))))
 
 ;;; Core helpers
 

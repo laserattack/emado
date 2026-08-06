@@ -5,6 +5,7 @@
 ;;     (transient "0.12"))
 
 (require 'transient)
+(require 'seq)
 
 (defgroup emado nil
   "Mado entry manager for Emacs."
@@ -108,12 +109,70 @@ Set this once and all operations will use it.")
 (defvar emado--last-args nil
   "Last mado args for repeating.")
 
-(defun emado--run (args)
-  "Run mado with ARGS (list of strings) and return output string."
-  (let ((default-directory (or emado-working-directory default-directory)))
-    (with-output-to-string
-      (with-current-buffer standard-output
-        (apply #'call-process emado-executable nil t nil args)))))
+(defvar emado--current-process nil
+  "Currently running mado process, if any.")
+
+(defun emado--run (args &optional callback)
+  "Run mado with ARGS asynchronously.
+When process finishes, call CALLBACK with output string.
+If no CALLBACK, just display output in emado buffer."
+  (when (and emado--current-process
+             (process-live-p emado--current-process))
+    (kill-process emado--current-process))
+
+  (let* ((default-directory (or emado-working-directory default-directory))
+         (output-buffer (generate-new-buffer " *emado-output*"))
+         (proc (make-process
+                :name "emado"
+                :buffer output-buffer
+                :command `(,emado-executable ,@args)
+                :sentinel
+                (lambda (process _event)
+                  (let ((output
+                         (with-current-buffer (process-buffer process)
+                           (prog1 (buffer-string)
+                             (kill-buffer)))))
+                    (if callback
+                        (funcall callback output)
+                      (emado--display output)))
+                  (when (eq emado--current-process process)
+                    (setq emado--current-process nil))))))
+    (setq emado--current-process proc)))
+
+(defvar emado--loading-messages
+  '("Mixing cocktails..."
+    "Kneading the dough..."
+    "Watering the plants..."
+    "Mining bitcoin..."
+    "Walking the dog..."
+    "Folding origami..."
+    "Baking cookies..."
+    "Stirring the cauldron..."
+    "Polishing the silverware..."
+    "Counting sheep..."
+    "Chasing rainbows..."
+    "Inflating balloons..."
+    "Whistling a tune..."
+    "Tying shoelaces..."
+    "Skipping stones..."
+    "Painting the fence..."
+    "Blowing bubbles..."
+    "Stacking pancakes..."
+    "Watching paint dry...")
+  "Random loading messages for emado buffer.")
+
+(defun emado--show-status (&optional message)
+  "Show random loading MESSAGE in emado buffer."
+  (unless message
+    (setq message (seq-random-elt emado--loading-messages)))
+  (let ((buf (get-buffer-create "*emado*")))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert message)
+        (goto-char (point-min))
+        (emado-mode)))
+    (pop-to-buffer buf)))
 
 (defun emado--display (output)
   "Display OUTPUT in emado buffer."
@@ -158,9 +217,9 @@ Set this once and all operations will use it.")
   (interactive)
   (if emado--last-args
       (progn
-        (emado--display (emado--run emado--last-args))
-        (message "Repeated last command"))
-    (message "No previous command to repeat")))
+        (emado--show-status)
+        (emado--run emado--last-args))
+    (emado--show-status "No previous command to repeat")))
 
 ;;; Transient menus
 
@@ -222,8 +281,9 @@ Set this once and all operations will use it.")
   (let* ((transient-current-prefix 'emado-init-menu)
          (targs (transient-args 'emado-init-menu))
          (args (append '("init" "--abs-path") targs)))
-    (emado--display (emado--run args))
-    (setq emado--last-args args))
+    (setq emado--last-args args)
+    (emado--show-status)
+    (emado--run args #'emado--display))
   (transient-quit-one))
 
 ;; ---- New entry ----
@@ -246,8 +306,9 @@ Set this once and all operations will use it.")
   (let* ((transient-current-prefix 'emado-new-menu)
          (targs (transient-args 'emado-new-menu))
          (args (append '("new" "--abs-path") targs)))
-    (emado--display (emado--run args))
-    (setq emado--last-args args))
+    (setq emado--last-args args)
+    (emado--show-status)
+    (emado--run args #'emado--display))
   (transient-quit-one))
 
 ;; ---- List ----
@@ -280,8 +341,9 @@ Set this once and all operations will use it.")
   (let* ((transient-current-prefix 'emado-list-menu)
          (targs (transient-args 'emado-list-menu))
          (args `("list" "--abs-paths" ,@targs ,@extra-args ,query)))
-    (emado--display (emado--run args))
-    (setq emado--last-args args)))
+    (setq emado--last-args args)
+    (emado--show-status)
+    (emado--run args #'emado--display)))
 
 (defun emado--list-all ()
   "List all entries."
@@ -323,16 +385,17 @@ Set this once and all operations will use it.")
   (let* ((prompt (if emado--last-query
                      (format "Remove by query (default: %s): " emado--last-query)
                    "Remove by query: "))
-         (query (read-string prompt nil nil emado--last-query))
-         (targs (transient-args 'emado-remove-menu))
-         (args `("remove" "--abs-paths" ,@targs ,query)))
+         (query (read-string prompt nil nil emado--last-query)))
     (when (string-empty-p query)
       (setq query emado--last-query))
     (when (and query (not (string-empty-p query)))
       (setq emado--last-query query)
       (when (yes-or-no-p (format "Really remove entries matching '%s'? " query))
-        (emado--display (emado--run args))
-        (setq emado--last-args args))))
+        (let* ((targs (transient-args 'emado-remove-menu))
+               (args `("remove" "--abs-paths" ,@targs ,query)))
+          (setq emado--last-args args)
+          (emado--show-status)
+          (emado--run args #'emado--display)))))
   (transient-quit-one))
 
 ;; ---- Info ----
@@ -341,8 +404,9 @@ Set this once and all operations will use it.")
   "Show repository info."
   (interactive)
   (let ((args '("info" "--abs-path")))
-    (emado--display (emado--run args))
-    (setq emado--last-args args)))
+    (setq emado--last-args args)
+    (emado--show-status)
+    (emado--run args #'emado--display)))
 
 ;; ---- Working directory ----
 
@@ -371,19 +435,19 @@ Set this once and all operations will use it.")
    (:info (lambda () (if emado-working-directory
                          (format "Current: %s (forced)" emado-working-directory)
                        (format "Current: %s" default-directory))))
-   ("w" "Set directory"     emado-set-working-directory)
-   ("W" "Clear directory"   emado-clear-working-directory)]
+   ("w" "Set directory" emado-set-working-directory)
+   ("W" "Clear directory" emado-clear-working-directory)]
   [["Actions"
-    ("l" "List entries"     emado-list-menu)
-    ("c" "New entry"        emado-new-menu)
-    ("r" "Remove entries"   emado-remove-menu)]
+    ("l" "List entries" emado-list-menu)
+    ("c" "New entry" emado-new-menu)
+    ("r" "Remove entries" emado-remove-menu)]
    ["Repository"
-    ("i" "Init"             emado-init-menu)
-    ("h" "Info"             emado-info)]]
+    ("i" "Init" emado-init-menu)
+    ("h" "Info" emado-info)]]
   [["Other"
-    ("C" "Customize"        emado-customize)]
+    ("C" "Customize" emado-customize)]
    ["Quit"
-    ("q" "Quit"             transient-quit-one)]])
+    ("q" "Quit" transient-quit-one)]])
 
 ;;;###autoload
 (defun emado ()

@@ -302,7 +302,7 @@ If no CALLBACK, just display output in emado buffer."
    ("i" "Init" emado--init)]
   ["Options"
    ("f" "Try force init" "--force")]
-  ["Save/Reset"
+  ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
    ("R" "Reset all options" emado--reset-options)]
   ["Quit"
@@ -327,7 +327,7 @@ If no CALLBACK, just display output in emado buffer."
    ("c" "New entry" emado--new-entry)]
   ["Options"
    ("t" "Template" emado--flag-template)]
-  ["Save/Reset"
+  ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
    ("R" "Reset all options" emado--reset-options)]
   ["Quit"
@@ -363,7 +363,7 @@ If no CALLBACK, just display output in emado buffer."
    ("u" "Hide status" "--hide-status")
    ("g" "Hide tags" "--hide-tags")
    ("h" "Hide path" "--hide-path")]
-  ["Save/Reset"
+  ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
    ("R" "Reset all options" emado--reset-options)]
   ["Quit"
@@ -406,7 +406,7 @@ If no CALLBACK, just display output in emado buffer."
    ("r" "Remove by query" emado--remove-query)]
   ["Options"
    ("i" "Case-insensitive" emado--flag-ignore-case)]
-  ["Save/Reset"
+  ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
    ("R" "Reset all options" emado--reset-options)]
   ["Quit"

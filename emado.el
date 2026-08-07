@@ -21,11 +21,6 @@
   :type 'boolean
   :group 'emado)
 
-(defun emado-customize ()
-  "Open customization group for emado."
-  (interactive)
-  (customize-group 'emado))
-
 (defface emado-face
   '((t :foreground "#dcaf79" :weight bold))
   "Face for highlighting."
@@ -57,23 +52,30 @@
 (defconst emado--empty-message "Nothing here but us chickens"
   "Message shown when there are no mado output.")
 
+(defconst emado--outline-regexp "^\\(Statuses\\|Tags\\):"
+  "Regexp for outline headings in emado buffer.")
+
 (defconst emado--bindings
-  '(("q" . emado-quit)
-    ("g" . emado-repeat-last)
-    ("RET" . emado-go-at-point)
-    ("d" . emado-delete-entry-at-point)
-    ("k" . emado-delete-entry-at-point)
-    ("n" . emado-next-line)
-    ("p" . emado-previous-line)
-    ("h" . emado-menu)
-    ("l" . emado-list-menu)
-    ("c" . emado-new-menu)
-    ("i" . emado-init-menu)
-    ("r" . emado-remove-menu)
-    ("w" . emado-set-working-directory)
-    ("W" . emado-clear-working-directory)
-    ("C" . emado-customize))
-  "Alist of emado keybindings (key . command).")
+  '(;; don't show in help
+    ("q" emado-quit nil)
+    ("g" emado-repeat-last nil)
+    ("RET" emado-go-at-point nil)
+    ("TAB" emado-toggle-section nil)
+    ("<backtab>" emado-toggle-all-sections nil)
+    ("d" emado-delete-entry-at-point nil)
+    ("k" emado-delete-entry-at-point nil)
+    ("n" emado-next-line nil)
+    ("p" emado-previous-line nil)
+    ("h" emado-menu nil)
+    ;; show in help
+    ("l" emado-list-menu t)
+    ("c" emado-new-menu t)
+    ("i" emado-init-menu t)
+    ("r" emado-remove-menu t)
+    ("w" emado-set-working-directory t)
+    ("W" emado-clear-working-directory t)
+    ("C" emado-customize t))
+  "Alist of emado keybindings (key command show-in-help).")
 
 (defconst emado--loading-messages
   '("Mixing cocktails..."
@@ -110,6 +112,9 @@ Set this once and all operations will use it.")
 (defvar emado--current-process nil
   "Currently running mado process, if any.")
 
+(defvar emado--all-sections-visible t
+  "Track whether all outline sections are visible.")
+
 ;;; Custom classes for default values support
 
 (defclass emado--default-option (transient-option)
@@ -130,6 +135,28 @@ Set this once and all operations will use it.")
 
 ;;; Mode
 
+(defun emado-customize ()
+  "Open customization group for emado."
+  (interactive)
+  (customize-group 'emado))
+
+(defun emado-toggle-section ()
+  "Toggle visibility of status/tags section at point."
+  (interactive)
+  (beginning-of-line)
+  (when (looking-at emado--outline-regexp)
+    (outline-toggle-children)))
+
+(defun emado-toggle-all-sections ()
+  "Toggle visibility of all outline sections."
+  (interactive)
+  (if emado--all-sections-visible
+      (progn
+        (outline-hide-body)
+        (setq emado--all-sections-visible nil))
+    (outline-show-all)
+    (setq emado--all-sections-visible t)))
+
 (defun emado-quit ()
   "Close emado window and kill buffer."
   (interactive)
@@ -138,27 +165,29 @@ Set this once and all operations will use it.")
 (defun emado-next-line ()
   "Move to next logical line."
   (interactive)
-  (forward-line 1))
+  (forward-visible-line 1))
 
 (defun emado-previous-line ()
   "Move to previous logical line."
   (interactive)
-  (forward-line -1))
+  (forward-visible-line -1))
 
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))
     (dolist (bind emado--bindings)
-      (define-key map (kbd (car bind)) (cdr bind)))
+      (define-key map (kbd (car bind)) (cadr bind)))
     map)
   "Keymap for emado buffer.")
 
 (define-derived-mode emado-mode special-mode "Emado"
   "Major mode for viewing mado output."
   (setq-local font-lock-defaults '(emado-font-lock-keywords t))
+  (setq-local outline-regexp emado--outline-regexp)
+  (outline-minor-mode 1)
   (unless (get-buffer-window emado--buffer-name)
     (let ((keys (mapcar (lambda (bind)
                           (propertize (car bind) 'face 'emado-face))
-                        emado--bindings)))
+                        (seq-filter (lambda (b) (nth 2 b)) emado--bindings))))
       (message "Commands: %s; %s to quit; %s for help"
                (mapconcat 'identity keys ", ")
                (propertize "q" 'face 'emado-face)

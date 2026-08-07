@@ -33,6 +33,23 @@ Set this once and all operations will use it.")
   (interactive)
   (customize-group 'emado))
 
+(defface emado-face
+  '((t :foreground "#dcaf79" :weight bold))
+  "Face for highlighting."
+  :group 'emado)
+
+(defconst emado-font-lock-keywords
+  (list
+   ;; Section headers: Main directory:, Entries count:, Statuses:, Tags:
+   '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Hint\\):" 1 'emado-face)
+   ;; Field labels: TIME:[...], NAME:[...], PRIORITY:[...], etc.
+   '("\\_<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
+   ;; File paths: path/to/MAIN.md:1:
+   '("^\\([^:\n]+\\):[0-9]+\\:" 1 'emado-face)
+   '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
+   )
+  "Font lock keywords for emado-mode.")
+
 ;;; Custom classes for default values support
 
 (defclass emado--default-option (transient-option)
@@ -51,7 +68,7 @@ Set this once and all operations will use it.")
     (when val
       (oset obj value (oref obj argument)))))
 
-;;; Buffer & Mode
+;;; Mode
 
 (defun emado-quit ()
   "Close emado window and kill buffer."
@@ -68,64 +85,42 @@ Set this once and all operations will use it.")
   (interactive)
   (forward-line -1))
 
+(defvar emado--bindings
+  '(("q" . emado-quit)
+    ("g" . emado-repeat-last)
+    ("RET" . emado-open-entry-at-point)
+    ("d" . emado-delete-entry-at-point)
+    ("k" . emado-delete-entry-at-point)
+    ("n" . emado-next-line)
+    ("p" . emado-previous-line)
+    ("h" . emado-menu)
+    ("l" . emado-list-menu)
+    ("c" . emado-new-menu)
+    ("i" . emado-init-menu)
+    ("r" . emado-remove-menu)
+    ("w" . emado-set-working-directory)
+    ("W" . emado-clear-working-directory)
+    ("C" . emado-customize))
+  "Alist of emado keybindings (key . command).")
+
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "q") #'emado-quit)
-    (define-key map (kbd "g") #'emado-repeat-last)
-    (define-key map (kbd "RET") #'emado-open-entry-at-point)
-    (define-key map (kbd "d") #'emado-delete-entry-at-point)
-    (define-key map (kbd "k") #'emado-delete-entry-at-point)
-    (define-key map (kbd "n") 'emado-next-line)
-    (define-key map (kbd "p") 'emado-previous-line)
-    (define-key map (kbd "h") #'emado-menu)
-    (define-key map (kbd "l") #'emado-list-menu)
-    (define-key map (kbd "c") #'emado-new-menu)
-    (define-key map (kbd "i") #'emado-init-menu)
-    (define-key map (kbd "r") #'emado-remove-menu)
-    (define-key map (kbd "w") #'emado-set-working-directory)
-    (define-key map (kbd "W") #'emado-clear-working-directory)
-    (define-key map (kbd "C") #'emado-customize)
+    (dolist (bind emado--bindings)
+      (define-key map (kbd (car bind)) (cdr bind)))
     map)
   "Keymap for emado buffer.")
-
-(defface emado-face
-  '((t :foreground "#dcaf79" :weight bold))
-  "Face for highlighting."
-  :group 'emado)
-
-(defconst emado-font-lock-keywords
-  (list
-   ;; Section headers: Main directory:, Entries count:, Statuses:, Tags:
-   '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Hint\\):" 1 'emado-face)
-   ;; Field labels: TIME:[...], NAME:[...], PRIORITY:[...], etc.
-   '("\\_<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
-   ;; File paths: path/to/MAIN.md:1:
-   '("^\\([^:\n]+\\):[0-9]+\\:" 1 'emado-face)
-   '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
-   )
-  "Font lock keywords for emado-mode.")
 
 (define-derived-mode emado-mode special-mode "Emado"
   "Major mode for viewing mado output."
   (setq-local font-lock-defaults '(emado-font-lock-keywords t))
   (unless (get-buffer-window "*emado*")
-    (message (concat "Commands: "
-                     (propertize "n" 'face 'emado-face) ", "
-                     (propertize "p" 'face 'emado-face) ", "
-                     (propertize "RET" 'face 'emado-face) ", "
-                     (propertize "g" 'face 'emado-face) ", "
-                     (propertize "d" 'face 'emado-face) ", "
-                     (propertize "k" 'face 'emado-face) ", "
-                     (propertize "l" 'face 'emado-face) ", "
-                     (propertize "c" 'face 'emado-face) ", "
-                     (propertize "i" 'face 'emado-face) ", "
-                     (propertize "r" 'face 'emado-face) ", "
-                     (propertize "h" 'face 'emado-face) ", "
-                     (propertize "w" 'face 'emado-face) ", "
-                     (propertize "W" 'face 'emado-face) ", "
-                     (propertize "C" 'face 'emado-face) "; "
-                     (propertize "q" 'face 'emado-face) " to quit; "
-                     (propertize "h" 'face 'emado-face) " for help"))))
+    (let ((keys (mapcar (lambda (bind)
+                          (propertize (car bind) 'face 'emado-face))
+                        emado--bindings)))
+      (message "Commands: %s; %s to quit; %s for help"
+               (mapconcat 'identity keys ", ")
+               (propertize "q" 'face 'emado-face)
+               (propertize "h" 'face 'emado-face)))))
 
 ;;; Core helpers
 

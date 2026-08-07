@@ -60,7 +60,7 @@
 (defconst emado--bindings
   '(("q" . emado-quit)
     ("g" . emado-repeat-last)
-    ("RET" . emado-open-entry-at-point)
+    ("RET" . emado-go-at-point)
     ("d" . emado-delete-entry-at-point)
     ("k" . emado-delete-entry-at-point)
     ("n" . emado-next-line)
@@ -228,20 +228,56 @@ If no CALLBACK, just display output in emado buffer."
         (emado-mode)))
     (emado--show-buffer buf)))
 
-(defun emado-open-entry-at-point ()
-  "Open mado entry at current line."
+(defun emado--get-parent-header ()
+  "Find the nearest parent header before current line.
+Returns one of: 'statuses, 'tags, or nil."
+  (save-excursion
+    (beginning-of-line)
+    (while (and (not (bobp))
+                (looking-at "^  "))
+      (forward-line -1)
+      (beginning-of-line))
+    (cond
+     ((looking-at "^Statuses:") 'statuses)
+     ((looking-at "^Tags:") 'tags))))
+
+(defun emado-go-at-point ()
+  "Open mado entry at current line, or search by status/tag."
   (interactive)
   (beginning-of-line)
-  (when (looking-at "^\\([^:\n]+\\):\\([0-9]+\\):")
+  (cond
+   ;; File paths: path/to/file.md:1:
+   ((looking-at "^\\(.*\\):\\([0-9]+\\):")
     (let ((file (match-string 1)))
       (find-file-other-window file)
-      (goto-char (point-min)))))
+      (goto-char (point-min))))
+   ;; Main directory: /path/to/dir
+   ((looking-at "^Main directory: \\(.*\\)$")
+    (let ((dir (match-string 1)))
+      (dired-other-window dir)))
+   ;; Entries count: COUNT
+   ((looking-at "^Entries count: \\([0-9]+\\)$")
+    (emado--list-all))
+   ;; Status or tag line (starts with two spaces)
+   ((looking-at "^  \\(.*\\): \\([0-9]+\\)")
+    (let* ((value (match-string 1))
+           (header (emado--get-parent-header)))
+      (when (and header value)
+        (let ((query (pcase header
+                       ('statuses (concat "status = '" value "'"))
+                       ('tags (concat "tag = '" value "'")))))
+          (when query
+            (let* ((targs (transient-args 'emado-list-menu))
+                   (args `("list" "--abs-paths" ,@targs ,query)))
+              (setq emado--last-args args)
+              (emado--show-status)
+              (emado--run args #'emado--display)))))))))
 
 (defun emado-delete-entry-at-point ()
   "Delete mado entry at current line after confirmation."
   (interactive)
   (beginning-of-line)
-  (when (looking-at "^\\([^:\n]+\\):\\([0-9]+\\):")
+  (when (looking-at "^\\(.*\\):\\([0-9]+\\):")
     (let ((dir (file-name-directory (match-string 1)))
           (inhibit-read-only t))
       (when (and dir (yes-or-no-p (format "Delete entry %s? " dir)))

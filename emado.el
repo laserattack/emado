@@ -21,13 +21,6 @@
   :type 'boolean
   :group 'emado)
 
-(defvar emado-working-directory nil
-  "Working directory for mado operations.
-Set this once and all operations will use it.")
-
-(defvar emado--last-query nil
-  "Last query used for list or remove operations.")
-
 (defun emado-customize ()
   "Open customization group for emado."
   (interactive)
@@ -49,6 +42,73 @@ Set this once and all operations will use it.")
    '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
    )
   "Font lock keywords for emado-mode.")
+
+;;; Internal variables
+
+(defconst emado--buffer-name "*emado*"
+  "Name of the emado output buffer.")
+
+(defconst emado--output-buffer-name " *emado-output*"
+  "Name of the temporary emado process output buffer.")
+
+(defconst emado--process-name "emado"
+  "Name of the emado process.")
+
+(defconst emado--empty-message "Nothing here but us chickens"
+  "Message shown when there are no mado output.")
+
+(defconst emado--bindings
+  '(("q" . emado-quit)
+    ("g" . emado-repeat-last)
+    ("RET" . emado-open-entry-at-point)
+    ("d" . emado-delete-entry-at-point)
+    ("k" . emado-delete-entry-at-point)
+    ("n" . emado-next-line)
+    ("p" . emado-previous-line)
+    ("h" . emado-menu)
+    ("l" . emado-list-menu)
+    ("c" . emado-new-menu)
+    ("i" . emado-init-menu)
+    ("r" . emado-remove-menu)
+    ("w" . emado-set-working-directory)
+    ("W" . emado-clear-working-directory)
+    ("C" . emado-customize))
+  "Alist of emado keybindings (key . command).")
+
+(defconst emado--loading-messages
+  '("Mixing cocktails..."
+    "Kneading the dough..."
+    "Watering the plants..."
+    "Mining bitcoin..."
+    "Walking the dog..."
+    "Folding origami..."
+    "Baking cookies..."
+    "Stirring the cauldron..."
+    "Polishing the silverware..."
+    "Counting sheep..."
+    "Chasing rainbows..."
+    "Inflating balloons..."
+    "Whistling a tune..."
+    "Tying shoelaces..."
+    "Skipping stones..."
+    "Painting the fence..."
+    "Blowing bubbles..."
+    "Stacking pancakes..."
+    "Watching paint dry...")
+  "Random loading messages for emado buffer.")
+
+(defvar emado--working-directory nil
+  "Working directory for mado operations.
+Set this once and all operations will use it.")
+
+(defvar emado--last-query nil
+  "Last query used for list or remove operations.")
+
+(defvar emado--last-args nil
+  "Last mado args for repeating.")
+
+(defvar emado--current-process nil
+  "Currently running mado process, if any.")
 
 ;;; Custom classes for default values support
 
@@ -85,24 +145,6 @@ Set this once and all operations will use it.")
   (interactive)
   (forward-line -1))
 
-(defvar emado--bindings
-  '(("q" . emado-quit)
-    ("g" . emado-repeat-last)
-    ("RET" . emado-open-entry-at-point)
-    ("d" . emado-delete-entry-at-point)
-    ("k" . emado-delete-entry-at-point)
-    ("n" . emado-next-line)
-    ("p" . emado-previous-line)
-    ("h" . emado-menu)
-    ("l" . emado-list-menu)
-    ("c" . emado-new-menu)
-    ("i" . emado-init-menu)
-    ("r" . emado-remove-menu)
-    ("w" . emado-set-working-directory)
-    ("W" . emado-clear-working-directory)
-    ("C" . emado-customize))
-  "Alist of emado keybindings (key . command).")
-
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))
     (dolist (bind emado--bindings)
@@ -113,7 +155,7 @@ Set this once and all operations will use it.")
 (define-derived-mode emado-mode special-mode "Emado"
   "Major mode for viewing mado output."
   (setq-local font-lock-defaults '(emado-font-lock-keywords t))
-  (unless (get-buffer-window "*emado*")
+  (unless (get-buffer-window emado--buffer-name)
     (let ((keys (mapcar (lambda (bind)
                           (propertize (car bind) 'face 'emado-face))
                         emado--bindings)))
@@ -124,12 +166,6 @@ Set this once and all operations will use it.")
 
 ;;; Core helpers
 
-(defvar emado--last-args nil
-  "Last mado args for repeating.")
-
-(defvar emado--current-process nil
-  "Currently running mado process, if any.")
-
 (defun emado--run (args &optional callback)
   "Run mado with ARGS asynchronously.
 When process finishes, call CALLBACK with output string.
@@ -138,10 +174,10 @@ If no CALLBACK, just display output in emado buffer."
              (process-live-p emado--current-process))
     (kill-process emado--current-process))
 
-  (let* ((default-directory (or emado-working-directory default-directory))
-         (output-buffer (generate-new-buffer " *emado-output*"))
+  (let* ((default-directory (or emado--working-directory default-directory))
+         (output-buffer (generate-new-buffer emado--output-buffer-name))
          (proc (make-process
-                :name "emado"
+                :name emado--process-name
                 :buffer output-buffer
                 :command `(,emado-executable ,@args)
                 :sentinel
@@ -157,63 +193,40 @@ If no CALLBACK, just display output in emado buffer."
                     (setq emado--current-process nil))))))
     (setq emado--current-process proc)))
 
-(defvar emado--loading-messages
-  '("Mixing cocktails..."
-    "Kneading the dough..."
-    "Watering the plants..."
-    "Mining bitcoin..."
-    "Walking the dog..."
-    "Folding origami..."
-    "Baking cookies..."
-    "Stirring the cauldron..."
-    "Polishing the silverware..."
-    "Counting sheep..."
-    "Chasing rainbows..."
-    "Inflating balloons..."
-    "Whistling a tune..."
-    "Tying shoelaces..."
-    "Skipping stones..."
-    "Painting the fence..."
-    "Blowing bubbles..."
-    "Stacking pancakes..."
-    "Watching paint dry...")
-  "Random loading messages for emado buffer.")
+(defun emado--show-buffer (buf)
+  "Display BUF according to `emado-auto-switch' setting."
+  (if emado-auto-switch
+      (pop-to-buffer buf)
+    (let ((win (get-buffer-window buf)))
+      (if win
+          (set-window-buffer win buf)
+        (display-buffer buf)))))
 
 (defun emado--show-status (&optional message)
   "Show random loading MESSAGE in emado buffer."
   (unless message
     (setq message (seq-random-elt emado--loading-messages)))
-  (let ((buf (get-buffer-create "*emado*")))
+  (let ((buf (get-buffer-create emado--buffer-name)))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
         (insert message)
         (goto-char (point-min))
         (emado-mode)))
-    (if emado-auto-switch
-        (pop-to-buffer buf)
-      (let ((win (get-buffer-window buf)))
-        (if win
-            (set-window-buffer win buf)
-          (display-buffer buf))))))
+    (emado--show-buffer buf)))
 
 (defun emado--display (output)
   "Display OUTPUT in emado buffer."
-  (let ((buf (get-buffer-create "*emado*")))
+  (let ((buf (get-buffer-create emado--buffer-name)))
     (with-current-buffer buf
       (let ((inhibit-read-only t))
         (erase-buffer)
         (if (string-empty-p output)
-            (insert "Nothing here but us chickens")
+            (insert emado--empty-message)
           (insert output))
         (goto-char (point-min))
         (emado-mode)))
-    (if emado-auto-switch
-        (pop-to-buffer buf)
-      (let ((win (get-buffer-window buf)))
-        (if win
-            (set-window-buffer win buf)
-          (display-buffer buf))))))
+    (emado--show-buffer buf)))
 
 (defun emado-open-entry-at-point ()
   "Open mado entry at current line."
@@ -236,7 +249,7 @@ If no CALLBACK, just display output in emado buffer."
         (delete-region (line-beginning-position) (line-beginning-position 2))
         (when (string-empty-p (string-trim (buffer-string)))
           (erase-buffer)
-          (insert "Nothing here but us chickens")
+          (insert emado--empty-message)
           (goto-char (point-min)))
         (message "Entry deleted")))))
 
@@ -443,7 +456,7 @@ If no CALLBACK, just display output in emado buffer."
   :transient t
   (interactive)
   (let ((dir (read-directory-name "Working directory: " nil nil t)))
-    (setq emado-working-directory dir)
+    (setq emado--working-directory dir)
     (message "Working directory set to: %s" dir)
     (emado-info)))
 
@@ -451,7 +464,7 @@ If no CALLBACK, just display output in emado buffer."
   "Clear working directory setting."
   :transient t
   (interactive)
-  (setq emado-working-directory nil)
+  (setq emado--working-directory nil)
   (message "Working directory cleared, using default")
   (emado-info))
 
@@ -460,8 +473,8 @@ If no CALLBACK, just display output in emado buffer."
 (transient-define-prefix emado-menu ()
   "Mado entry manager for Emacs."
   ["Working directory"
-   (:info (lambda () (if emado-working-directory
-                         (format "Current: %s (forced)" emado-working-directory)
+   (:info (lambda () (if emado--working-directory
+                         (format "Current: %s (forced)" emado--working-directory)
                        (format "Current: %s" default-directory))))
    ("w" "Set directory" emado-set-working-directory)
    ("W" "Clear directory" emado-clear-working-directory)]

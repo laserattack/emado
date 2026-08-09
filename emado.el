@@ -28,11 +28,8 @@
 
 (defconst emado-font-lock-keywords
   (list
-   ;; Section headers: Main directory:, Entries count:, Statuses:, Tags:
-   '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Hint\\):" 1 'emado-face)
-   ;; Field labels: TIME:[...], NAME:[...], PRIORITY:[...], etc.
+   '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Priorities\\|Hint\\):" 1 'emado-face)
    '("\\_<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
-   ;; File paths: path/to/MAIN.md:1:
    '("^\\([^:\n]+\\):[0-9]+\\:" 1 'emado-face)
    '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
    )
@@ -90,7 +87,7 @@
 (defconst emado--empty-message "Nothing here but us chickens"
   "Message shown when there are no mado output.")
 
-(defconst emado--outline-regexp "^\\(Statuses\\|Tags\\):"
+(defconst emado--outline-regexp "^\\(Statuses\\|Tags\\|Priorities\\):"
   "Regexp for outline headings in emado buffer.")
 
 (defconst emado--bindings
@@ -179,11 +176,22 @@ Set this once and all operations will use it.")
   (customize-group 'emado))
 
 (defun emado-toggle-section ()
-  "Toggle visibility of status/tags section at point."
+  "Toggle visibility of section at point."
   (interactive)
   (beginning-of-line)
   (when (looking-at emado--outline-regexp)
-    (outline-toggle-children)))
+    (let* ((beg (point))
+           (end (save-excursion
+                  (forward-line 1)
+                  (if (re-search-forward emado--outline-regexp nil t)
+                      (match-beginning 0)
+                    (point-max))))
+           (has-content (save-excursion
+                          (goto-char beg)
+                          (forward-line 1)
+                          (< (point) end))))
+      (when has-content
+        (outline-toggle-children)))))
 
 (defun emado-toggle-all-sections ()
   "Toggle visibility of all outline sections."
@@ -221,6 +229,15 @@ Set this once and all operations will use it.")
   "Major mode for viewing mado output."
   (setq-local font-lock-defaults '(emado-font-lock-keywords t))
   (setq-local outline-regexp emado--outline-regexp)
+  (setq-local outline-level
+              (lambda ()
+                (save-excursion
+                  (beginning-of-line)
+                  (cond
+                   ((looking-at "^Statuses:") 3)
+                   ((looking-at "^Tags:") 2)
+                   ((looking-at "^Priorities:") 1)
+                   (t 1)))))
   (outline-minor-mode 1)
   (display-line-numbers-mode -1)
   (unless (get-buffer-window emado--buffer-name)
@@ -297,8 +314,7 @@ If no CALLBACK, just display output in emado buffer."
     (emado--show-buffer buf)))
 
 (defun emado--get-parent-header ()
-  "Find the nearest parent header before current line.
-Returns one of: 'statuses, 'tags, or nil."
+  "Find the nearest parent header before current line."
   (save-excursion
     (beginning-of-line)
     (while (and (not (bobp))
@@ -307,10 +323,11 @@ Returns one of: 'statuses, 'tags, or nil."
       (beginning-of-line))
     (cond
      ((looking-at "^Statuses:") 'statuses)
-     ((looking-at "^Tags:") 'tags))))
+     ((looking-at "^Tags:") 'tags)
+     ((looking-at "^Priorities:") 'priorities))))
 
 (defun emado-go-at-point ()
-  "Open mado entry at current line, or search by status/tag."
+  "Perform action based on current line context."
   (interactive)
   (beginning-of-line)
   (cond
@@ -326,14 +343,15 @@ Returns one of: 'statuses, 'tags, or nil."
    ;; Entries count: COUNT
    ((looking-at "^Entries count: \\([0-9]+\\)$")
     (emado--list-all))
-   ;; Status or tag line (starts with two spaces)
+   ;; Contents of sections (starts with two spaces)
    ((looking-at "^  \\(.*\\): \\([0-9]+\\)")
     (let* ((value (match-string 1))
            (header (emado--get-parent-header)))
       (when (and header value)
         (let ((query (pcase header
                        ('statuses (concat "status = '" value "'"))
-                       ('tags (concat "tag = '" value "'")))))
+                       ('tags (concat "tag = '" value "'"))
+                       ('priorities (concat "priority = " value)))))
           (when query
             (let* ((targs (transient-args 'emado-list-menu))
                    (args `("list" "--abs-paths" ,@targs ,query)))

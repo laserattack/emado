@@ -38,6 +38,44 @@
    )
   "Font lock keywords for emado-mode.")
 
+;;; Fringe indicators for outline sections
+
+(define-fringe-bitmap 'emado--fringe-right
+  [#b01100000
+   #b00110000
+   #b00011000
+   #b00001100
+   #b00011000
+   #b00110000
+   #b01100000
+   #b00000000])
+
+(define-fringe-bitmap 'emado--fringe-down
+  [#b00000000
+   #b10000010
+   #b11000110
+   #b01101100
+   #b00111000
+   #b00010000
+   #b00000000
+   #b00000000])
+
+(defun emado--update-fringe-indicators ()
+  "Update fringe indicators for all outline headings."
+  (remove-overlays (point-min) (point-max) 'emado--fringe t)
+  (save-excursion
+    (goto-char (point-min))
+    (while (outline-next-heading)
+      (let* ((beg (point))
+             (hidden (outline-invisible-p (line-end-position)))
+             (bitmap (if hidden 'emado--fringe-right 'emado--fringe-down))
+             (ov (make-overlay beg (1+ beg) nil t)))
+        (overlay-put ov 'emado--fringe t)
+        (overlay-put ov 'before-string
+                     (propertize " " 'display `(left-fringe ,bitmap)))))))
+
+(add-hook 'outline-view-change-hook #'emado--update-fringe-indicators)
+
 ;;; Internal variables
 
 (defconst emado--buffer-name "*emado*"
@@ -184,6 +222,7 @@ Set this once and all operations will use it.")
   (setq-local font-lock-defaults '(emado-font-lock-keywords t))
   (setq-local outline-regexp emado--outline-regexp)
   (outline-minor-mode 1)
+  (display-line-numbers-mode -1)
   (unless (get-buffer-window emado--buffer-name)
     (let ((keys (mapcar (lambda (bind)
                           (propertize (car bind) 'face 'emado-face))

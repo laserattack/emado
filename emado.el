@@ -257,12 +257,12 @@ Set this once and all operations will use it.")
 
 (defun emado--check-working-directory ()
   "Check if working directory exists. Clear if not."
-  (if (and emado--working-directory
-           (not (file-exists-p emado--working-directory)))
+  (let ((dir (or emado--working-directory default-directory)))
+    (if (file-exists-p dir)
+        t
       (progn
         (emado--show-status emado--invalid-working-dir-path-message)
-        nil)
-    t))
+        nil))))
 
 (defun emado--run (args &optional callback)
   "Run mado with ARGS asynchronously.

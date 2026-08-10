@@ -281,14 +281,14 @@ If no CALLBACK, just display output in emado buffer."
                   :command `(,emado-executable ,@args)
                   :sentinel
                   (lambda (process _event)
-                    (let ((output
-                           (with-current-buffer (process-buffer process)
-                             (prog1 (buffer-string)
-                               (kill-buffer)))))
-                      (if callback
-                          (funcall callback output)
-                        (emado--display output)))
                     (when (eq emado--current-process process)
+                      (let ((output
+                             (with-current-buffer (process-buffer process)
+                               (prog1 (buffer-string)
+                                 (kill-buffer)))))
+                        (if callback
+                            (funcall callback output)
+                          (emado--display output)))
                       (setq emado--current-process nil))))))
       (setq emado--current-process proc))))
 
@@ -393,10 +393,12 @@ If no CALLBACK, just display output in emado buffer."
   "Repeat the last mado command."
   (interactive)
   (if emado--last-args
-      (progn
+      (if (and emado--current-process
+               (process-live-p emado--current-process))
+          (message "Command is already running...")
         (emado--show-status)
         (emado--run emado--last-args))
-    (emado--show-status "No previous command to repeat")))
+    (message "No previous command to repeat")))
 
 ;;; Transient menus
 

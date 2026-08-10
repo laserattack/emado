@@ -87,6 +87,10 @@
 (defconst emado--empty-message "Nothing here but us chickens"
   "Message shown when there are no mado output.")
 
+(defconst emado--invalid-working-dir-path-message
+  "Working directory path is as real as my will to live"
+  "Message shown when working directory path does not exist.")
+
 (defconst emado--outline-regexp "^\\(Statuses\\|Tags\\|Priorities\\):"
   "Regexp for outline headings in emado buffer.")
 
@@ -251,32 +255,42 @@ Set this once and all operations will use it.")
 
 ;;; Core helpers
 
+(defun emado--check-working-directory ()
+  "Check if working directory exists. Clear if not."
+  (if (and emado--working-directory
+           (not (file-exists-p emado--working-directory)))
+      (progn
+        (emado--show-status emado--invalid-working-dir-path-message)
+        nil)
+    t))
+
 (defun emado--run (args &optional callback)
   "Run mado with ARGS asynchronously.
 When process finishes, call CALLBACK with output string.
 If no CALLBACK, just display output in emado buffer."
-  (when (and emado--current-process
-             (process-live-p emado--current-process))
-    (kill-process emado--current-process))
+  (when (emado--check-working-directory)
+    (when (and emado--current-process
+               (process-live-p emado--current-process))
+      (kill-process emado--current-process))
 
-  (let* ((default-directory (or emado--working-directory default-directory))
-         (output-buffer (generate-new-buffer emado--output-buffer-name))
-         (proc (make-process
-                :name emado--process-name
-                :buffer output-buffer
-                :command `(,emado-executable ,@args)
-                :sentinel
-                (lambda (process _event)
-                  (let ((output
-                         (with-current-buffer (process-buffer process)
-                           (prog1 (buffer-string)
-                             (kill-buffer)))))
-                    (if callback
-                        (funcall callback output)
-                      (emado--display output)))
-                  (when (eq emado--current-process process)
-                    (setq emado--current-process nil))))))
-    (setq emado--current-process proc)))
+    (let* ((default-directory (or emado--working-directory default-directory))
+           (output-buffer (generate-new-buffer emado--output-buffer-name))
+           (proc (make-process
+                  :name emado--process-name
+                  :buffer output-buffer
+                  :command `(,emado-executable ,@args)
+                  :sentinel
+                  (lambda (process _event)
+                    (let ((output
+                           (with-current-buffer (process-buffer process)
+                             (prog1 (buffer-string)
+                               (kill-buffer)))))
+                      (if callback
+                          (funcall callback output)
+                        (emado--display output)))
+                    (when (eq emado--current-process process)
+                      (setq emado--current-process nil))))))
+      (setq emado--current-process proc))))
 
 (defun emado--show-buffer (buf)
   "Display BUF according to `emado-auto-switch' setting."

@@ -29,7 +29,7 @@
 (defconst emado-font-lock-keywords
   (list
    '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Priorities\\|Hint\\):" 1 'emado-face)
-   '("\\_<\\(TIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
+   '("\\_<\\(TIME\\|MTIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
    '("^\\([^:\n]+\\):[0-9]+\\:" 1 'emado-face)
    '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
    )
@@ -432,6 +432,20 @@ If no CALLBACK, just display output in emado buffer."
   :argument "--ignore-case"
   :description "Case-insensitive")
 
+(transient-define-infix emado--flag-hide-time ()
+  "Hide time field."
+  :class 'emado--default-switch
+  :default-value t
+  :argument "--hide-time"
+  :description "Hide time")
+
+(transient-define-infix emado--flag-hide-mtime ()
+  "Hide mtime field."
+  :class 'emado--default-switch
+  :default-value t
+  :argument "--hide-mtime"
+  :description "Hide mtime")
+
 (transient-define-infix emado--flag-template ()
   "Template name for new entry."
   :class 'transient-option
@@ -503,7 +517,8 @@ If no CALLBACK, just display output in emado buffer."
   ["Hide fields options"
    ("o" "Only hidden" "--only-hidden")
    ("n" "Hide name" "--hide-name")
-   ("t" "Hide time" "--hide-time")
+   ("t" "Hide time" emado--flag-hide-time)
+   ("m" "Hide mtime" emado--flag-hide-mtime)
    ("d" "Hide deadline" "--hide-deadline")
    ("p" "Hide priority" "--hide-priority")
    ("u" "Hide status" "--hide-status")

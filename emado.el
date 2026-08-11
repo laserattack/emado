@@ -469,7 +469,7 @@ If no CALLBACK, just display output in emado buffer."
   "Initialize mado repository."
   ["Initialize"
    ("i" "Init" emado--init)]
-  ["Options"
+  ["Main"
    ("f" "Try force init" "--force")]
   ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
@@ -494,7 +494,7 @@ If no CALLBACK, just display output in emado buffer."
   "Create new mado entry."
   ["Create"
    ("c" "New entry" emado--new-entry)]
-  ["Options"
+  ["Main"
    ("t" "Template" emado--flag-template)]
   ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
@@ -520,19 +520,20 @@ If no CALLBACK, just display output in emado buffer."
   ["List"
    ("a" "All entries" emado--list-all)
    ("l" "List with query" emado--list-query)]
-  ["Main options"
+  ["Main"
    ("s" "Sort" emado--flag-sort)
    ("i" "Case-insensitive" emado--flag-ignore-case)]
-  ["Hide fields options"
-   ("o" "Only hidden" "--only-hidden")
-   ("n" "Hide name" "--hide-name")
-   ("t" "Hide time" emado--flag-hide-time)
-   ("m" "Hide mtime" emado--flag-hide-mtime)
-   ("d" "Hide deadline" "--hide-deadline")
-   ("p" "Hide priority" "--hide-priority")
-   ("u" "Hide status" "--hide-status")
-   ("g" "Hide tags" "--hide-tags")
-   ("h" "Hide path" "--hide-path")]
+  [["Hide fields"
+    ("n" "Name" "--hide-name")
+    ("t" "Time" emado--flag-hide-time)
+    ("m" "Mtime" emado--flag-hide-mtime)
+    ("d" "Deadline" "--hide-deadline")
+    ("o" "Only hidden" "--only-hidden")]
+   [""
+    ("p" "Priority" "--hide-priority")
+    ("u" "Status" "--hide-status")
+    ("g" "Tags" "--hide-tags")
+    ("h" "Path" "--hide-path")]]
   ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
    ("R" "Reset all options" emado--reset-options)]
@@ -574,7 +575,7 @@ If no CALLBACK, just display output in emado buffer."
   "Remove mado entries."
   ["Remove"
    ("r" "Remove by query" emado--remove-query)]
-  ["Options"
+  ["Main"
    ("i" "Case-insensitive" emado--flag-ignore-case)]
   ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)

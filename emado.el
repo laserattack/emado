@@ -154,23 +154,30 @@ Set this once and all operations will use it.")
 (defvar emado--all-sections-visible t
   "Track whether all outline sections are visible.")
 
+(defvar emado--saved-menus nil
+  "List of menu commands that have been saved this session.")
+
 ;;; Custom classes for default values support
 
 (defclass emado--default-option (transient-option)
   ((default-value :initarg :default-value :initform nil)))
 
-(cl-defmethod transient-init-value ((obj emado--default-option))
-  (let ((val (oref obj default-value)))
-    (when val
-      (oset obj value val))))
-
 (defclass emado--default-switch (transient-switch)
   ((default-value :initarg :default-value :initform nil)))
 
+(cl-defmethod transient-init-value ((obj emado--default-option))
+  (if (memq (oref transient--prefix command) emado--saved-menus)
+      (cl-call-next-method)
+    (let ((val (oref obj default-value)))
+      (when val
+        (oset obj value val)))))
+
 (cl-defmethod transient-init-value ((obj emado--default-switch))
-  (let ((val (oref obj default-value)))
-    (when val
-      (oset obj value (oref obj argument)))))
+  (if (memq (oref transient--prefix command) emado--saved-menus)
+      (cl-call-next-method)
+    (let ((val (oref obj default-value)))
+      (when val
+        (oset obj value (oref obj argument))))))
 
 ;;; Mode
 
@@ -407,12 +414,14 @@ If no CALLBACK, just display output in emado buffer."
   :transient t
   (interactive)
   (transient-set)
+  (cl-pushnew (oref transient--prefix command) emado--saved-menus)
   (message "Options saved for this session"))
 
 (transient-define-suffix emado--reset-options ()
   "Reset all options to default."
   :transient t
   (interactive)
+  (setq emado--saved-menus (delq (oref transient--prefix command) emado--saved-menus))
   (transient-reset)
   (message "All options reset"))
 

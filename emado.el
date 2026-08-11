@@ -29,7 +29,7 @@
 (defconst emado-font-lock-keywords
   (list
    '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Priorities\\|Hint\\):" 1 'emado-face)
-   '("\\_<\\(TIME\\|MTIME\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
+   '("\\_<\\(TIME\\|MTIME\\|PATH\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
    '("^\\([^:\n]+\\):[0-9]+\\:" 1 'emado-face)
    '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
    )
@@ -455,6 +455,13 @@ If no CALLBACK, just display output in emado buffer."
   :argument "--hide-mtime"
   :description "Hide mtime")
 
+(transient-define-infix emado--flag-hide-path ()
+  "Hide path field."
+  :class 'emado--default-switch
+  :default-value t
+  :argument "--hide-path"
+  :description "Hide path")
+
 (transient-define-infix emado--flag-template ()
   "Template name for new entry."
   :class 'transient-option
@@ -533,7 +540,7 @@ If no CALLBACK, just display output in emado buffer."
     ("p" "Priority" "--hide-priority")
     ("u" "Status" "--hide-status")
     ("g" "Tags" "--hide-tags")
-    ("h" "Path" "--hide-path")]]
+    ("h" "Path" emado--flag-hide-path)]]
   ["Save/Reset (this session)"
    ("S" "Save current options" emado--save-options)
    ("R" "Reset all options" emado--reset-options)]

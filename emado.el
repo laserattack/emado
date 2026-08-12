@@ -655,10 +655,10 @@ If no CALLBACK, just display output in emado buffer."
    ["Repository"
     ("i" "Init" emado-init-menu)
     ("h" "Info" emado-info)]]
-  [["Other"
-    ("C" "Customize" emado-customize)]
-   ["Quit"
-    ("q" "Quit" transient-quit-one)]])
+  ["Other"
+   ("C" "Customize" emado-customize)]
+  ["Quit"
+   ("q" "Quit" transient-quit-one)])
 
 ;;;###autoload
 (defun emado-default-bindings ()

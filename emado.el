@@ -101,8 +101,9 @@
     ("RET" emado-go-at-point nil)
     ("TAB" emado-toggle-section nil)
     ("<backtab>" emado-toggle-all-sections nil)
-    ("d" emado-delete-entry-at-point nil)
-    ("k" emado-delete-entry-at-point nil)
+    ("d" emado-delete-at-point nil)
+    ("k" emado-delete-at-point nil)
+    ("x" emado-delete-at-point nil)
     ("n" emado-next-line nil)
     ("p" emado-previous-line nil)
     ("h" emado-menu nil)
@@ -299,6 +300,15 @@ If no CALLBACK, just display output in emado buffer."
                       (setq emado--current-process nil))))))
       (setq emado--current-process proc))))
 
+(defun emado--remove-by-query (query)
+  "Remove entries matching QUERY after confirmation."
+  (when (yes-or-no-p (format "Remove entries matching query: %s ? " query))
+    (let* ((targs (transient-args 'emado-remove-menu))
+           (args `("remove" "--abs-paths" ,@targs ,query)))
+      (setq emado--last-args args)
+      (emado--show-status)
+      (emado--run args #'emado--display))))
+
 (defun emado--show-buffer (buf)
   "Display BUF according to `emado-auto-switch' setting."
   (if emado-auto-switch
@@ -380,21 +390,35 @@ If no CALLBACK, just display output in emado buffer."
               (emado--show-status)
               (emado--run args #'emado--display)))))))))
 
-(defun emado-delete-entry-at-point ()
-  "Delete mado entry at current line after confirmation."
+(defun emado-delete-at-point ()
+  "Delete mado entry at current line after confirmation.
+For status/tag/priority lines, remove all entries matching that value."
   (interactive)
   (beginning-of-line)
-  (when (looking-at "^\\(.*\\):\\([0-9]+\\):")
+  (cond
+   ;; File paths: path/to/file.md:1:
+   ((looking-at "^\\(.*\\):\\([0-9]+\\):")
     (let ((dir (file-name-directory (match-string 1)))
           (inhibit-read-only t))
-      (when (and dir (yes-or-no-p (format "Delete entry %s? " dir)))
+      (when (and dir (yes-or-no-p (format "Remove entry %s ? " dir)))
         (delete-directory dir t)
         (delete-region (line-beginning-position) (line-beginning-position 2))
         (when (string-empty-p (string-trim (buffer-string)))
           (erase-buffer)
           (insert emado--empty-message)
           (goto-char (point-min)))
-        (message "Entry deleted")))))
+        (message "Entry deleted"))))
+   ;; Contents of sections (starts with two spaces)
+   ((looking-at "^  \\(.*\\): \\([0-9]+\\)")
+    (let* ((value (match-string 1))
+           (header (emado--get-parent-header)))
+      (when (and header value)
+        (let ((query (pcase header
+                       ('statuses (concat "status = '" value "'"))
+                       ('tags (concat "tag = '" value "'"))
+                       ('priorities (concat "priority = " value)))))
+          (when query
+            (emado--remove-by-query query))))))))
 
 (defun emado-repeat-last ()
   "Repeat the last mado command."
@@ -601,12 +625,7 @@ If no CALLBACK, just display output in emado buffer."
       (setq query emado--last-query))
     (when (and query (not (string-empty-p query)))
       (setq emado--last-query query)
-      (when (yes-or-no-p (format "Really remove entries matching '%s'? " query))
-        (let* ((targs (transient-args 'emado-remove-menu))
-               (args `("remove" "--abs-paths" ,@targs ,query)))
-          (setq emado--last-args args)
-          (emado--show-status)
-          (emado--run args #'emado--display)))))
+      (emado--remove-by-query query)))
   (transient-quit-one))
 
 ;; ---- Info ----

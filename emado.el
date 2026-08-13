@@ -263,6 +263,55 @@ Set this once and all operations will use it.")
 
 ;;; Core helpers
 
+(defun emado--delete-directory-and-string (dir)
+  "Delete directory DIR after confirmation and update buffer.
+Return t if directory was deleted, nil otherwise."
+  (let ((inhibit-read-only t))
+    (when (yes-or-no-p (format "Remove directory %s ? " dir))
+      (delete-directory dir t)
+      (delete-region (line-beginning-position) (line-beginning-position 2))
+      (when (string-empty-p (string-trim (buffer-string)))
+        (erase-buffer)
+        (insert emado--empty-message)
+        (goto-char (point-min)))
+      (message "Directory deleted")
+      t)))
+
+(defun emado--show-buffer (buf)
+  "Display BUF according to `emado-auto-switch' setting."
+  (if emado-auto-switch
+      (pop-to-buffer buf)
+    (let ((win (get-buffer-window buf)))
+      (if win
+          (set-window-buffer win buf)
+        (display-buffer buf)))))
+
+(defun emado--display (output)
+  "Display OUTPUT in emado buffer."
+  (let ((buf (get-buffer-create emado--buffer-name)))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (if (string-empty-p output)
+            (insert emado--empty-message)
+          (insert output))
+        (goto-char (point-min))
+        (emado-mode)))
+    (emado--show-buffer buf)))
+
+(defun emado--show-status (&optional message)
+  "Show random loading MESSAGE in emado buffer."
+  (unless message
+    (setq message (seq-random-elt emado--loading-messages)))
+  (let ((buf (get-buffer-create emado--buffer-name)))
+    (with-current-buffer buf
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert message)
+        (goto-char (point-min))
+        (emado-mode)))
+    (emado--show-buffer buf)))
+
 (defun emado--check-working-directory ()
   "Check if working directory exists. Clear if not."
   (let ((dir (or emado--working-directory default-directory)))
@@ -300,6 +349,17 @@ If no CALLBACK, just display output in emado buffer."
                       (setq emado--current-process nil))))))
       (setq emado--current-process proc))))
 
+(defun emado-repeat-last ()
+  "Repeat the last mado command."
+  (interactive)
+  (if emado--last-args
+      (if (and emado--current-process
+               (process-live-p emado--current-process))
+          (message "Command is already running...")
+        (emado--show-status)
+        (emado--run emado--last-args))
+    (message "No previous command to repeat")))
+
 (defun emado--remove-by-query (query)
   "Remove entries matching QUERY after confirmation."
   (when (yes-or-no-p (format "Remove entries matching query: %s ? " query))
@@ -308,41 +368,6 @@ If no CALLBACK, just display output in emado buffer."
       (setq emado--last-args args)
       (emado--show-status)
       (emado--run args #'emado--display))))
-
-(defun emado--show-buffer (buf)
-  "Display BUF according to `emado-auto-switch' setting."
-  (if emado-auto-switch
-      (pop-to-buffer buf)
-    (let ((win (get-buffer-window buf)))
-      (if win
-          (set-window-buffer win buf)
-        (display-buffer buf)))))
-
-(defun emado--show-status (&optional message)
-  "Show random loading MESSAGE in emado buffer."
-  (unless message
-    (setq message (seq-random-elt emado--loading-messages)))
-  (let ((buf (get-buffer-create emado--buffer-name)))
-    (with-current-buffer buf
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (insert message)
-        (goto-char (point-min))
-        (emado-mode)))
-    (emado--show-buffer buf)))
-
-(defun emado--display (output)
-  "Display OUTPUT in emado buffer."
-  (let ((buf (get-buffer-create emado--buffer-name)))
-    (with-current-buffer buf
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (if (string-empty-p output)
-            (insert emado--empty-message)
-          (insert output))
-        (goto-char (point-min))
-        (emado-mode)))
-    (emado--show-buffer buf)))
 
 (defun emado--get-parent-header ()
   "Find the nearest parent header before current line."
@@ -392,22 +417,23 @@ If no CALLBACK, just display output in emado buffer."
 
 (defun emado-delete-at-point ()
   "Delete mado entry at current line after confirmation.
-For status/tag/priority lines, remove all entries matching that value."
+For status/tag/priority lines, remove all entries matching that value.
+For Entries count line, remove all entries."
   (interactive)
   (beginning-of-line)
   (cond
    ;; File paths: path/to/file.md:1:
    ((looking-at "^\\(.*\\):\\([0-9]+\\):")
-    (let ((dir (file-name-directory (match-string 1)))
-          (inhibit-read-only t))
-      (when (and dir (yes-or-no-p (format "Remove entry %s ? " dir)))
-        (delete-directory dir t)
-        (delete-region (line-beginning-position) (line-beginning-position 2))
-        (when (string-empty-p (string-trim (buffer-string)))
-          (erase-buffer)
-          (insert emado--empty-message)
-          (goto-char (point-min)))
-        (message "Entry deleted"))))
+    (let ((dir (file-name-directory (match-string 1))))
+      (emado--delete-directory-and-string dir)))
+   ;; Main directory: /path/to/dir
+   ((looking-at "^Main directory: \\(.*\\)$")
+    (let ((dir (match-string 1)))
+      (when (emado--delete-directory-and-string dir)
+        (emado-repeat-last))))
+   ;; Entries count: COUNT
+   ((looking-at "^Entries count: \\([0-9]+\\)$")
+    (emado--remove-by-query "all"))
    ;; Contents of sections (starts with two spaces)
    ((looking-at "^  \\(.*\\): \\([0-9]+\\)")
     (let* ((value (match-string 1))
@@ -419,17 +445,6 @@ For status/tag/priority lines, remove all entries matching that value."
                        ('priorities (concat "priority = " value)))))
           (when query
             (emado--remove-by-query query))))))))
-
-(defun emado-repeat-last ()
-  "Repeat the last mado command."
-  (interactive)
-  (if emado--last-args
-      (if (and emado--current-process
-               (process-live-p emado--current-process))
-          (message "Command is already running...")
-        (emado--show-status)
-        (emado--run emado--last-args))
-    (message "No previous command to repeat")))
 
 ;;; Transient menus
 

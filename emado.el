@@ -30,8 +30,8 @@
   (list
    '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Priorities\\|Hint\\):" 1 'emado-face)
    '("\\_<\\(TIME\\|MTIME\\|PATH\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
-   '("^\\([^:\n]+\\):[0-9]+\\:" 1 'emado-face)
    '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
+   '("^[^:\n]+:[0-9]+: " 0 '(face nil invisible t))
    )
   "Font lock keywords for emado-mode.")
 

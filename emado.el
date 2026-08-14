@@ -505,8 +505,26 @@ For Entries count line, remove all entries."
   "Template name for new entry."
   :class 'transient-option
   :argument "--template="
-  :reader (lambda (_prompt _initial _history)
-            (read-string "Template: "))
+  :reader (lambda (prompt _initial _history)
+            (let* ((default-directory (or emado--working-directory default-directory))
+                   (dir (string-trim
+                         (shell-command-to-string
+                          (concat emado-executable " info --dir --abs-path"))))
+                   (templates-dir (when (and dir
+                                             (not (string-empty-p dir))
+                                             (file-directory-p dir))
+                                    (expand-file-name ".templates/" dir)))
+                   (files (when (and templates-dir
+                                     (file-exists-p templates-dir))
+                            (directory-files templates-dir nil "\\.md$")))
+                   (names (mapcar (lambda (f)
+                                    (file-name-sans-extension f))
+                                  files)))
+              (if names
+                  (completing-read prompt names nil t)
+                (progn
+                  (message "No templates found")
+                  nil))))
   :prompt "Template: ")
 
 ;; ---- Init ----

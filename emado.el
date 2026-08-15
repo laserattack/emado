@@ -71,8 +71,6 @@
         (overlay-put ov 'before-string
                      (propertize " " 'display `(left-fringe ,bitmap)))))))
 
-(add-hook 'outline-view-change-hook #'emado--update-fringe-indicators)
-
 ;;; Internal variables
 
 (defconst emado--buffer-name "*emado*"
@@ -252,6 +250,7 @@ Set this once and all operations will use it.")
                    (t 1)))))
   (outline-minor-mode 1)
   (display-line-numbers-mode -1)
+  (add-hook 'outline-view-change-hook #'emado--update-fringe-indicators nil t)
   (unless (get-buffer-window emado--buffer-name)
     (let ((keys (mapcar (lambda (bind)
                           (propertize (car bind) 'face 'emado-face))

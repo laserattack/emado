@@ -27,6 +27,10 @@ To install, copy `emado.el` to a directory in your Emacs
 (emado-default-bindings)
 ```
 
+This binds `C-c e` to `emado-info`, which opens the emado buffer
+showing repository statistics. From there, press `h` to open the main
+menu with all available commands
+
 ## Requirements
 
 - Emacs 28.1 or later

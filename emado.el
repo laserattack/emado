@@ -110,6 +110,8 @@
     ("c" emado-new-menu t)
     ("i" emado-init-menu t)
     ("r" emado-remove-menu t)
+    ("m" emado-set-parallel-mode t)
+    ("M" emado-clear-parallel-mode t)
     ("w" emado-set-working-directory t)
     ("W" emado-clear-working-directory t)
     ("C" emado-customize t))
@@ -140,6 +142,9 @@
 (defvar emado--working-directory nil
   "Working directory for mado operations.
 Set this once and all operations will use it.")
+
+(defvar emado-parallel-mode nil
+  "If non-nil, enable parallel processing for mado commands.")
 
 (defvar emado--last-query nil
   "Last query used for list or remove operations.")
@@ -262,6 +267,12 @@ Set this once and all operations will use it.")
 
 ;;; Core helpers
 
+(defun emado--with-parallel-if-set (args)
+  "Prepend `--parallel' to ARGS if `emado-parallel-mode' is non-nil."
+  (if emado-parallel-mode
+      (cons "--parallel" args)
+    args))
+
 (defun emado--delete-directory-and-string (dir)
   "Delete directory DIR after confirmation and update buffer.
 Return t if directory was deleted, nil otherwise."
@@ -363,7 +374,7 @@ If no CALLBACK, just display output in emado buffer."
   "Remove entries matching QUERY after confirmation."
   (when (yes-or-no-p (format "Remove entries matching query: %s ? " query))
     (let* ((targs (transient-args 'emado-remove-menu))
-           (args `("remove" ,@targs ,query)))
+           (args (emado--with-parallel-if-set `("remove" ,@targs ,query))))
       (setq emado--last-args args)
       (emado--show-status)
       (emado--run args #'emado--display))))
@@ -545,7 +556,7 @@ For Entries count line, remove all entries."
   (interactive)
   (let* ((transient-current-prefix 'emado-init-menu)
          (targs (transient-args 'emado-init-menu))
-         (args (append '("init") targs)))
+         (args (emado--with-parallel-if-set (append '("init") targs))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -570,7 +581,7 @@ For Entries count line, remove all entries."
   (interactive)
   (let* ((transient-current-prefix 'emado-new-menu)
          (targs (transient-args 'emado-new-menu))
-         (args (append '("new") targs)))
+         (args (emado--with-parallel-if-set (append '("new") targs))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -607,7 +618,7 @@ For Entries count line, remove all entries."
   "List entries matching QUERY with EXTRA-ARGS."
   (let* ((transient-current-prefix 'emado-list-menu)
          (targs (transient-args 'emado-list-menu))
-         (args `("list" ,@targs ,@extra-args ,query)))
+         (args (emado--with-parallel-if-set `("list" ,@targs ,@extra-args ,query))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))
@@ -665,7 +676,7 @@ For Entries count line, remove all entries."
 (defun emado-info ()
   "Show repository info."
   (interactive)
-  (let ((args '("info")))
+  (let ((args (emado--with-parallel-if-set '("info"))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))
@@ -689,16 +700,28 @@ For Entries count line, remove all entries."
   (message "Working directory cleared, using default")
   (emado-info))
 
+;; ---- Parallel mode ----
+
+(transient-define-suffix emado-set-parallel-mode ()
+  "Enable parallel mode for mado operations."
+  :transient t
+  (interactive)
+  (setq emado-parallel-mode t)
+  (message "Parallel mode enabled")
+  (emado-info))
+
+(transient-define-suffix emado-clear-parallel-mode ()
+  "Disable parallel mode for mado operations."
+  :transient t
+  (interactive)
+  (setq emado-parallel-mode nil)
+  (message "Parallel mode disabled")
+  (emado-info))
+
 ;; ---- Main Menu ----
 
 (transient-define-prefix emado-menu ()
   "Mado entry manager for Emacs."
-  ["Working directory"
-   (:info (lambda () (if emado--working-directory
-                         (format "Current: %s (forced)" emado--working-directory)
-                       (format "Current: %s" default-directory))))
-   ("w" "Set directory" emado-set-working-directory)
-   ("W" "Clear directory" emado-clear-working-directory)]
   [["Actions"
     ("l" "List entries" emado-list-menu)
     ("c" "New entry" emado-new-menu)
@@ -706,6 +729,18 @@ For Entries count line, remove all entries."
    ["Repository"
     ("i" "Init" emado-init-menu)
     ("h" "Info" emado-info)]]
+  [["Parallel mode"
+    (:info (lambda () (if emado-parallel-mode
+                          "Current: enabled"
+                        "Current: disabled")))
+    ("m" "Enable" emado-set-parallel-mode)
+    ("M" "Disable" emado-clear-parallel-mode)]
+   ["Working directory"
+    (:info (lambda () (if emado--working-directory
+                          (format "Current: %s (forced)" emado--working-directory)
+                        (format "Current: %s" default-directory))))
+    ("w" "Set directory" emado-set-working-directory)
+    ("W" "Clear directory" emado-clear-working-directory)]]
   ["Other"
    ("C" "Customize" emado-customize)]
   ["Quit"

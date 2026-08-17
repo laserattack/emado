@@ -12,7 +12,7 @@ organized in one place
 
 ## Usage example
 
-![](./static/list_base.gif)
+![](./static/demo_emado.gif)
 
 Detailed documentation is available in the
 [mado](https://github.com/laserattack/mado) repository

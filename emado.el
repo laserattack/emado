@@ -363,7 +363,7 @@ If no CALLBACK, just display output in emado buffer."
   "Remove entries matching QUERY after confirmation."
   (when (yes-or-no-p (format "Remove entries matching query: %s ? " query))
     (let* ((targs (transient-args 'emado-remove-menu))
-           (args `("remove" "--abs-paths" ,@targs ,query)))
+           (args `("remove" ,@targs ,query)))
       (setq emado--last-args args)
       (emado--show-status)
       (emado--run args #'emado--display))))
@@ -409,7 +409,7 @@ If no CALLBACK, just display output in emado buffer."
                        ('priorities (concat "priority = " value)))))
           (when query
             (let* ((targs (transient-args 'emado-list-menu))
-                   (args `("list" "--abs-paths" ,@targs ,query)))
+                   (args `("list" ,@targs ,query)))
               (setq emado--last-args args)
               (emado--show-status)
               (emado--run args #'emado--display)))))))))
@@ -508,7 +508,7 @@ For Entries count line, remove all entries."
             (let* ((default-directory (or emado--working-directory default-directory))
                    (dir (string-trim
                          (shell-command-to-string
-                          (concat emado-executable " info --dir --abs-path"))))
+                          (concat emado-executable " info --dir"))))
                    (templates-dir (when (and dir
                                              (not (string-empty-p dir))
                                              (file-directory-p dir))
@@ -545,7 +545,7 @@ For Entries count line, remove all entries."
   (interactive)
   (let* ((transient-current-prefix 'emado-init-menu)
          (targs (transient-args 'emado-init-menu))
-         (args (append '("init" "--abs-path") targs)))
+         (args (append '("init") targs)))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -570,7 +570,7 @@ For Entries count line, remove all entries."
   (interactive)
   (let* ((transient-current-prefix 'emado-new-menu)
          (targs (transient-args 'emado-new-menu))
-         (args (append '("new" "--abs-path") targs)))
+         (args (append '("new") targs)))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -607,7 +607,7 @@ For Entries count line, remove all entries."
   "List entries matching QUERY with EXTRA-ARGS."
   (let* ((transient-current-prefix 'emado-list-menu)
          (targs (transient-args 'emado-list-menu))
-         (args `("list" "--abs-paths" ,@targs ,@extra-args ,query)))
+         (args `("list" ,@targs ,@extra-args ,query)))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))
@@ -665,7 +665,7 @@ For Entries count line, remove all entries."
 (defun emado-info ()
   "Show repository info."
   (interactive)
-  (let ((args '("info" "--abs-path")))
+  (let ((args '("info")))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))

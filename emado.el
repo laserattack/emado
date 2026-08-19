@@ -97,6 +97,8 @@
     ("q" emado-quit nil)
     ("g" emado-repeat-last nil)
     ("RET" emado-go-at-point nil)
+    ("o" emado-open-dir-at-point nil)
+    ("C-o" emado-open-dir-at-point nil)
     ("TAB" emado-toggle-section nil)
     ("<backtab>" emado-toggle-all-sections nil)
     ("d" emado-delete-at-point nil)
@@ -469,6 +471,20 @@ For Entries count line, remove all entries."
                        ('priorities (concat "priority = " value)))))
           (when query
             (emado--remove-by-query query))))))))
+
+(defun emado-open-dir-at-point ()
+  "Open entry directory in dired.
+For entry lines, open the entry directory.
+For Main directory line, open the main directory."
+  (interactive)
+  (beginning-of-line)
+  (cond
+   ;; Entry file: path/to/file.md:1:
+   ((looking-at "^\\(.*\\):\\([0-9]+\\):")
+    (dired-other-window (file-name-directory (match-string 1))))
+   ;; Main directory: /path/to/dir
+   ((looking-at "^Main directory: \\(.*\\)$")
+    (dired-other-window (match-string 1)))))
 
 ;;; Transient menus
 

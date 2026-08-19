@@ -104,6 +104,8 @@
     ("x" emado-delete-at-point nil)
     ("n" emado-next-line nil)
     ("p" emado-previous-line nil)
+    ("M-n" emado-next-heading nil)
+    ("M-p" emado-previous-heading nil)
     ("h" emado-menu nil)
     ;; show in help
     ("l" emado-list-menu t)
@@ -232,6 +234,18 @@ Set this once and all operations will use it.")
   "Move to previous logical line."
   (interactive)
   (forward-visible-line -1))
+
+(defun emado-next-heading ()
+  "Move to next heading."
+  (interactive)
+  (outline-next-heading)
+  (beginning-of-line))
+
+(defun emado-previous-heading ()
+  "Move to previous heading."
+  (interactive)
+  (outline-previous-heading)
+  (beginning-of-line))
 
 (defvar emado-mode-map
   (let ((map (make-sparse-keymap)))

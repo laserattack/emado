@@ -31,6 +31,13 @@ This binds `C-c e` to `emado-info`, which opens the emado buffer
 showing repository statistics. From there, press `h` to open the main
 menu with all available commands
 
+Or use your own keybinding instead:
+
+```elisp
+(require 'emado)
+(global-set-key (kbd "C-c m") 'emado-info)
+```
+
 ## Requirements
 
 - Emacs 28.1 or later

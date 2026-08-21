@@ -289,7 +289,7 @@ Set this once and all operations will use it.")
   "Delete directory DIR after confirmation and update buffer.
 Return t if directory was deleted, nil otherwise."
   (let ((inhibit-read-only t))
-    (when (yes-or-no-p (format "Remove directory %s ? " dir))
+    (when (yes-or-no-p (format "Emado (remove directory): %s ? " dir))
       (delete-directory dir t)
       (delete-region (line-beginning-position) (line-beginning-position 2))
       (when (string-empty-p (string-trim (buffer-string)))
@@ -384,7 +384,7 @@ If no CALLBACK, just display output in emado buffer."
 
 (defun emado--remove-by-query (query)
   "Remove entries matching QUERY after confirmation."
-  (when (yes-or-no-p (format "Remove entries matching query: %s ? " query))
+  (when (yes-or-no-p (format "Emado (remove query): %s ? " query))
     (let* ((targs (transient-args 'emado-remove-menu))
            (args (emado--with-parallel-if-set `("remove" ,@targs ,query))))
       (setq emado--last-args args)
@@ -506,8 +506,8 @@ For Main directory line, open the main directory."
   :default-value "-priority,-time"
   :argument "--sort="
   :reader (lambda (prompt _initial _history)
-            (read-string (concat prompt "(+/-field,...): ")))
-  :prompt "Sort: ")
+            (read-string "Emado (sort, +/-field,...): "))
+  :prompt "Emado (sort): ")
 
 (transient-define-infix emado--flag-ignore-case ()
   "Case-insensitive search."
@@ -561,7 +561,7 @@ For Main directory line, open the main directory."
                 (progn
                   (message "No templates found")
                   nil))))
-  :prompt "Template: ")
+  :prompt "Emado (create entry template): ")
 
 ;; ---- Init ----
 
@@ -659,8 +659,8 @@ For Main directory line, open the main directory."
   "List entries matching a custom query."
   (interactive)
   (let* ((prompt (if emado--last-query
-                     (format "Search by query (default: %s): " emado--last-query)
-                   "Search by query: "))
+                     (format "Emado (search query, default: %s): " emado--last-query)
+                   "Emado (search query): "))
          (query (read-string prompt nil nil emado--last-query)))
     (when (string-empty-p query)
       (setq query emado--last-query))
@@ -687,8 +687,8 @@ For Main directory line, open the main directory."
   "Remove entries matching a query."
   (interactive)
   (let* ((prompt (if emado--last-query
-                     (format "Remove by query (default: %s): " emado--last-query)
-                   "Remove by query: "))
+                     (format "Emado (remove query, default: %s): " emado--last-query)
+                   "Emado (remove query): "))
          (query (read-string prompt nil nil emado--last-query)))
     (when (string-empty-p query)
       (setq query emado--last-query))
@@ -713,7 +713,7 @@ For Main directory line, open the main directory."
   "Set working directory for mado operations."
   :transient t
   (interactive)
-  (let ((dir (read-directory-name "Working directory: " nil nil t)))
+  (let ((dir (read-directory-name "Emado (working directory): " nil nil t)))
     (setq emado--working-directory dir)
     (message "Working directory set to: %s" dir)
     (emado-info)))
@@ -766,7 +766,7 @@ For Main directory line, open the main directory."
     ("i" "Init" emado-init-menu)
     ("h" "Info" emado-info)]]
   ["Other"
-   ("s" "Session settings" emado-settings-menu)]
+   ("s" "Global session options" emado-settings-menu)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 

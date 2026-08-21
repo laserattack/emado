@@ -119,11 +119,7 @@
     ("c" emado-new-menu t)
     ("i" emado-init-menu t)
     ("r" emado-remove-menu t)
-    ("m" emado-set-parallel-mode t)
-    ("M" emado-clear-parallel-mode t)
-    ("w" emado-set-working-directory t)
-    ("W" emado-clear-working-directory t)
-    ("C" emado-customize t))
+    ("s" emado-settings-menu t))
   "Alist of emado keybindings (key command show-in-help).")
 
 (defconst emado--loading-messages
@@ -193,11 +189,6 @@ Set this once and all operations will use it.")
         (oset obj value (oref obj argument))))))
 
 ;;; Mode
-
-(defun emado-customize ()
-  "Open customization group for emado."
-  (interactive)
-  (customize-group 'emado))
 
 (defun emado-toggle-section ()
   "Toggle visibility of section at point."
@@ -737,21 +728,31 @@ For Main directory line, open the main directory."
 
 ;; ---- Parallel mode ----
 
-(transient-define-suffix emado-set-parallel-mode ()
-  "Enable parallel mode for mado operations."
+(transient-define-suffix emado-toggle-parallel-mode ()
+  "Toggle parallel mode for mado operations."
   :transient t
   (interactive)
-  (setq emado-parallel-mode t)
-  (message "Parallel mode enabled")
+  (setq emado-parallel-mode (not emado-parallel-mode))
+  (message "Parallel mode %s" (if emado-parallel-mode "enabled" "disabled"))
   (emado-info))
 
-(transient-define-suffix emado-clear-parallel-mode ()
-  "Disable parallel mode for mado operations."
-  :transient t
-  (interactive)
-  (setq emado-parallel-mode nil)
-  (message "Parallel mode disabled")
-  (emado-info))
+;; ---- Settings Menu ----
+
+(transient-define-prefix emado-settings-menu ()
+  "Session settings for emado."
+  ["Working directory"
+   (:info (lambda () (if emado--working-directory
+                         (format "Current: %s (forced)" emado--working-directory)
+                       (format "Current: %s" default-directory))))
+   ("w" "Set directory" emado-set-working-directory)
+   ("W" "Clear directory" emado-clear-working-directory)]
+  ["Parallel mode"
+   (:info (lambda () (if emado-parallel-mode
+                         "Current: enabled"
+                       "Current: disabled")))
+   ("p" "Toggle" emado-toggle-parallel-mode)]
+  ["Quit"
+   ("q" "Quit" transient-quit-one)])
 
 ;; ---- Main Menu ----
 
@@ -764,20 +765,8 @@ For Main directory line, open the main directory."
    ["Repository"
     ("i" "Init" emado-init-menu)
     ("h" "Info" emado-info)]]
-  [["Parallel mode"
-    (:info (lambda () (if emado-parallel-mode
-                          "Current: enabled"
-                        "Current: disabled")))
-    ("m" "Enable" emado-set-parallel-mode)
-    ("M" "Disable" emado-clear-parallel-mode)]
-   ["Working directory"
-    (:info (lambda () (if emado--working-directory
-                          (format "Current: %s (forced)" emado--working-directory)
-                        (format "Current: %s" default-directory))))
-    ("w" "Set directory" emado-set-working-directory)
-    ("W" "Clear directory" emado-clear-working-directory)]]
   ["Other"
-   ("C" "Customize" emado-customize)]
+   ("s" "Session settings" emado-settings-menu)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 

@@ -619,7 +619,18 @@ For Main directory line, open the main directory."
   "List mado entries."
   ["List"
    ("a" "All entries" emado--list-all)
-   ("l" "List with query" emado--list-query)]
+   ("ll" "List with query" emado--list-query)]
+  [["Quick fuzzy list"
+    ("ls" "Status" emado-list-fuzzy-status)
+    ("ln" "Name" emado-list-fuzzy-name)]
+   [""
+    ("lt" "Tag" emado-list-fuzzy-tag)
+    ("lp" "Priority" emado-list-fuzzy-priority)]
+   [""
+    ("ld" "Deadline" emado-list-fuzzy-deadline)
+    ("li" "Time" emado-list-fuzzy-time)]
+   [""
+    ("lh" "Path" emado-list-fuzzy-path)]]
   ["Main"
    ("s" "Sort" emado--flag-sort)
    ("i" "Case-insensitive" emado--flag-ignore-case)]
@@ -655,13 +666,14 @@ For Main directory line, open the main directory."
   (emado--list-entries "all")
   (transient-quit-one))
 
-(defun emado--list-query ()
-  "List entries matching a custom query."
+(defun emado--list-query (&optional initial)
+  "List entries matching a custom query.
+If INITIAL is non-nil, use it as initial input."
   (interactive)
-  (let* ((prompt (if emado--last-query
+  (let* ((prompt (if (and emado--last-query (not initial))
                      (format "Emado (search query, default: %s): " emado--last-query)
                    "Emado (search query): "))
-         (query (read-string prompt nil nil emado--last-query)))
+         (query (read-string prompt initial emado--last-query)))
     (when (string-empty-p query)
       (setq query emado--last-query))
     (when (and query (not (string-empty-p query)))
@@ -669,12 +681,58 @@ For Main directory line, open the main directory."
       (emado--list-entries query)))
   (transient-quit-one))
 
+(defun emado-list-fuzzy-status ()
+  "Fuzzy list by status."
+  (interactive)
+  (emado--list-query "status ~~ "))
+
+(defun emado-list-fuzzy-name ()
+  "Fuzzy list by name."
+  (interactive)
+  (emado--list-query "name ~~ "))
+
+(defun emado-list-fuzzy-tag ()
+  "Fuzzy list by tag."
+  (interactive)
+  (emado--list-query "tag ~~ "))
+
+(defun emado-list-fuzzy-priority ()
+  "Fuzzy list by priority."
+  (interactive)
+  (emado--list-query "priority ~~ "))
+
+(defun emado-list-fuzzy-deadline ()
+  "Fuzzy list by deadline."
+  (interactive)
+  (emado--list-query "deadline ~~ "))
+
+(defun emado-list-fuzzy-path ()
+  "Fuzzy list by path."
+  (interactive)
+  (emado--list-query "path ~~ "))
+
+(defun emado-list-fuzzy-time ()
+  "Fuzzy list by time."
+  (interactive)
+  (emado--list-query "time ~~ "))
+
 ;; ---- Remove ----
 
 (transient-define-prefix emado-remove-menu ()
   "Remove mado entries."
   ["Remove"
-   ("r" "Remove by query" emado--remove-query)]
+   ("rr" "Remove by query" emado--remove-query)]
+  [["Quick fuzzy remove"
+    ("rs" "Status" emado-remove-fuzzy-status)
+    ("rn" "Name" emado-remove-fuzzy-name)]
+   [""
+    ("rt" "Tag" emado-remove-fuzzy-tag)
+    ("rp" "Priority" emado-remove-fuzzy-priority)]
+   [""
+    ("rd" "Deadline" emado-remove-fuzzy-deadline)
+    ("ri" "Time" emado-remove-fuzzy-time)]
+   [""
+    ("rh" "Path" emado-remove-fuzzy-path)]]
   ["Main"
    ("i" "Case-insensitive" emado--flag-ignore-case)]
   ["Save/Reset (this session)"
@@ -683,19 +741,55 @@ For Main directory line, open the main directory."
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
-(defun emado--remove-query ()
-  "Remove entries matching a query."
+(defun emado--remove-query (&optional initial)
+  "Remove entries matching a custom query.
+If INITIAL is non-nil, use it as initial input."
   (interactive)
-  (let* ((prompt (if emado--last-query
+  (let* ((prompt (if (and emado--last-query (not initial))
                      (format "Emado (remove query, default: %s): " emado--last-query)
                    "Emado (remove query): "))
-         (query (read-string prompt nil nil emado--last-query)))
+         (query (read-string prompt initial emado--last-query)))
     (when (string-empty-p query)
       (setq query emado--last-query))
     (when (and query (not (string-empty-p query)))
       (setq emado--last-query query)
       (emado--remove-by-query query)))
   (transient-quit-one))
+
+(defun emado-remove-fuzzy-status ()
+  "Fuzzy remove by status."
+  (interactive)
+  (emado--remove-query "status ~~ "))
+
+(defun emado-remove-fuzzy-name ()
+  "Fuzzy remove by name."
+  (interactive)
+  (emado--remove-query "name ~~ "))
+
+(defun emado-remove-fuzzy-tag ()
+  "Fuzzy remove by tag."
+  (interactive)
+  (emado--remove-query "tag ~~ "))
+
+(defun emado-remove-fuzzy-priority ()
+  "Fuzzy remove by priority."
+  (interactive)
+  (emado--remove-query "priority ~~ "))
+
+(defun emado-remove-fuzzy-deadline ()
+  "Fuzzy remove by deadline."
+  (interactive)
+  (emado--remove-query "deadline ~~ "))
+
+(defun emado-remove-fuzzy-path ()
+  "Fuzzy remove by path."
+  (interactive)
+  (emado--remove-query "path ~~ "))
+
+(defun emado-remove-fuzzy-time ()
+  "Fuzzy remove by time."
+  (interactive)
+  (emado--remove-query "time ~~ "))
 
 ;; ---- Info ----
 

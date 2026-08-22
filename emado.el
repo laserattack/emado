@@ -36,7 +36,7 @@
      (1 'error)
      (2 'line-number)
      (3 'line-number))
-   '("^[^:\n]+:[0-9]+: " 0 '(face nil invisible t))
+   '("^.*:[0-9]+: " 0 '(face nil invisible t))
    )
   "Font lock keywords for emado-mode.")
 
@@ -410,7 +410,7 @@ If no CALLBACK, just display output in emado buffer."
   (beginning-of-line)
   (cond
    ;; File paths: path/to/file.md:1:
-   ((looking-at "^\\(.*\\):\\([0-9]+\\):")
+   ((looking-at "^\\(.*\\):\\([0-9]+\\): ")
     (let ((file (match-string 1)))
       (find-file-other-window file)
       (goto-char (point-min))))
@@ -445,7 +445,7 @@ For Entries count line, remove all entries."
   (beginning-of-line)
   (cond
    ;; File paths: path/to/file.md:1:
-   ((looking-at "^\\(.*\\):\\([0-9]+\\):")
+   ((looking-at "^\\(.*\\):\\([0-9]+\\): ")
     (let ((dir (file-name-directory (match-string 1))))
       (emado--delete-directory-and-string dir)))
    ;; Main directory: /path/to/dir
@@ -476,7 +476,7 @@ For Main directory line, open the main directory."
   (beginning-of-line)
   (cond
    ;; Entry file: path/to/file.md:1:
-   ((looking-at "^\\(.*\\):\\([0-9]+\\):")
+   ((looking-at "^\\(.*\\):\\([0-9]+\\): ")
     (dired-other-window (file-name-directory (match-string 1))))
    ;; Main directory: /path/to/dir
    ((looking-at "^Main directory: \\(.*\\)$")

@@ -36,7 +36,7 @@
      (1 'error)
      (2 'line-number)
      (3 'line-number))
-   '("^.*:[0-9]+: " 0 '(face nil invisible t))
+   '("^\\(.*\\):\\([0-9]+\\): " 0 '(face nil invisible t))
    )
   "Font lock keywords for emado-mode.")
 

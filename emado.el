@@ -30,12 +30,13 @@
   (list
    '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Priorities\\|Hint\\):" 1 'emado-face)
    '("\\_<\\(TIME\\|MTIME\\|PATH\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
-   '("^\\(Mado error [^:\n]+\\):" 1 'error)
-   '("^\\(Expected format\\):" 1 'error)
-   '("^\\(Error\\) at line \\([0-9]+\\), column \\([0-9]+\\):"
-     (1 'error)
-     (2 'line-number)
-     (3 'line-number))
+   '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
+   '("^\\(Expected\\):" 1 'emado-face)
+   '("^\\(Here\\):" 1 'emado-face)
+   '("^\\(Error\\) at line \\([0-9]+\\), col \\([0-9]+\\):"
+     (1 'emado-face)
+     (2 'emado-face)
+     (3 'emado-face))
    '("^\\(.*\\):\\([0-9]+\\): " 0 '(face nil invisible t))
    )
   "Font lock keywords for emado-mode.")

@@ -650,36 +650,45 @@ For Main directory line, open the main directory."
 (transient-define-prefix emado-list-menu ()
   "List mado entries."
   ["List"
-   ("a" "All entries" emado--list-all)
    ("ll" "List with query" emado--list-query)]
+  [["Quick special"
+    ("a" "All entries" emado--list-all)
+    ("ut" "Untagged" emado--list-untagged)]
+   [""
+    ("us" "Unstatused" emado--list-unstatused)
+    ("un" "Unnamed" emado--list-unnamed)]
+   [""
+    ("up" "Unprioritized" emado--list-unprioritized)
+    ("ud" "Undeadlined" emado--list-undeadlined)]]
   [["Quick fuzzy list"
-    ("ls" "Status" emado-list-fuzzy-status)
-    ("ln" "Name" emado-list-fuzzy-name)]
+    ("la" "Any" emado-list-fuzzy-any)
+    ("ls" "Status" emado-list-fuzzy-status)]
    [""
-    ("lt" "Tag" emado-list-fuzzy-tag)
-    ("lp" "Priority" emado-list-fuzzy-priority)]
+    ("ln" "Name" emado-list-fuzzy-name)
+    ("lt" "Tag" emado-list-fuzzy-tag)]
    [""
-    ("ld" "Deadline" emado-list-fuzzy-deadline)
-    ("li" "Time" emado-list-fuzzy-time)]
+    ("lp" "Priority" emado-list-fuzzy-priority)
+    ("ld" "Deadline" emado-list-fuzzy-deadline)]
    [""
+    ("li" "Time" emado-list-fuzzy-time)
     ("lh" "Path" emado-list-fuzzy-path)]]
   ["Main"
    ("s" "Sort" emado--flag-sort)
    ("i" "Case-insensitive" emado--flag-ignore-case)]
   [["Hide fields"
-    ("n" "Name" "--hide-name")
-    ("t" "Time" emado--flag-hide-time)
-    ("m" "Mtime" emado--flag-hide-mtime)
-    ("d" "Deadline" "--hide-deadline")
-    ("o" "Only hidden" "--only-hidden")]
+    ("N" "Name" "--hide-name")
+    ("T" "Time" emado--flag-hide-time)
+    ("M" "Mtime" emado--flag-hide-mtime)
+    ("D" "Deadline" "--hide-deadline")
+    ("O" "Only hidden" "--only-hidden")]
    [""
-    ("p" "Priority" "--hide-priority")
-    ("u" "Status" "--hide-status")
-    ("g" "Tags" "--hide-tags")
-    ("h" "Path" emado--flag-hide-path)]]
+    ("P" "Priority" "--hide-priority")
+    ("S" "Status" "--hide-status")
+    ("G" "Tags" "--hide-tags")
+    ("H" "Path" emado--flag-hide-path)]]
   ["Save/Reset (this session)"
-   ("S" "Save current options" emado--save-options)
-   ("R" "Reset all options" emado--reset-options)]
+   ("os" "Save current options" emado--save-options)
+   ("or" "Reset all options" emado--reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
@@ -698,6 +707,36 @@ For Main directory line, open the main directory."
   (emado--list-entries "all")
   (transient-quit-one))
 
+(defun emado--list-untagged ()
+  "List untagged entries."
+  (interactive)
+  (emado--list-entries "untagged")
+  (transient-quit-one))
+
+(defun emado--list-unstatused ()
+  "List unstatused entries."
+  (interactive)
+  (emado--list-entries "unstatused")
+  (transient-quit-one))
+
+(defun emado--list-unnamed ()
+  "List unnamed entries."
+  (interactive)
+  (emado--list-entries "unnamed")
+  (transient-quit-one))
+
+(defun emado--list-unprioritized ()
+  "List unprioritized entries."
+  (interactive)
+  (emado--list-entries "unprioritized")
+  (transient-quit-one))
+
+(defun emado--list-undeadlined ()
+  "List undeadlined entries."
+  (interactive)
+  (emado--list-entries "undeadlined")
+  (transient-quit-one))
+
 (defun emado--list-query (&optional initial)
   "List entries matching a custom query.
 If INITIAL is non-nil, use it as initial input."
@@ -712,6 +751,11 @@ If INITIAL is non-nil, use it as initial input."
       (setq emado--last-query query)
       (emado--list-entries query)))
   (transient-quit-one))
+
+(defun emado-list-fuzzy-any ()
+  "Fuzzy list by any."
+  (interactive)
+  (emado--list-query "any ~~ "))
 
 (defun emado-list-fuzzy-status ()
   "Fuzzy list by status."
@@ -754,24 +798,70 @@ If INITIAL is non-nil, use it as initial input."
   "Remove mado entries."
   ["Remove"
    ("rr" "Remove by query" emado--remove-query)]
+  [["Quick special"
+    ("a" "All entries" emado--remove-all)
+    ("ut" "Untagged" emado--remove-untagged)]
+   [""
+    ("us" "Unstatused" emado--remove-unstatused)
+    ("un" "Unnamed" emado--remove-unnamed)]
+   [""
+    ("up" "Unprioritized" emado--remove-unprioritized)
+    ("ud" "Undeadlined" emado--remove-undeadlined)]]
   [["Quick fuzzy remove"
-    ("rs" "Status" emado-remove-fuzzy-status)
-    ("rn" "Name" emado-remove-fuzzy-name)]
+    ("ra" "Any" emado-remove-fuzzy-any)
+    ("rs" "Status" emado-remove-fuzzy-status)]
    [""
-    ("rt" "Tag" emado-remove-fuzzy-tag)
-    ("rp" "Priority" emado-remove-fuzzy-priority)]
+    ("rn" "Name" emado-remove-fuzzy-name)
+    ("rt" "Tag" emado-remove-fuzzy-tag)]
    [""
-    ("rd" "Deadline" emado-remove-fuzzy-deadline)
-    ("ri" "Time" emado-remove-fuzzy-time)]
+    ("rp" "Priority" emado-remove-fuzzy-priority)
+    ("rd" "Deadline" emado-remove-fuzzy-deadline)]
    [""
+    ("ri" "Time" emado-remove-fuzzy-time)
     ("rh" "Path" emado-remove-fuzzy-path)]]
   ["Main"
    ("i" "Case-insensitive" emado--flag-ignore-case)]
   ["Save/Reset (this session)"
-   ("S" "Save current options" emado--save-options)
-   ("R" "Reset all options" emado--reset-options)]
+   ("os" "Save current options" emado--save-options)
+   ("or" "Reset all options" emado--reset-options)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
+
+(defun emado--remove-all ()
+  "Remove all entries."
+  (interactive)
+  (emado--remove-by-query "all")
+  (transient-quit-one))
+
+(defun emado--remove-untagged ()
+  "Remove untagged entries."
+  (interactive)
+  (emado--remove-by-query "untagged")
+  (transient-quit-one))
+
+(defun emado--remove-unstatused ()
+  "Remove unstatused entries."
+  (interactive)
+  (emado--remove-by-query "unstatused")
+  (transient-quit-one))
+
+(defun emado--remove-unnamed ()
+  "Remove unnamed entries."
+  (interactive)
+  (emado--remove-by-query "unnamed")
+  (transient-quit-one))
+
+(defun emado--remove-unprioritized ()
+  "Remove unprioritized entries."
+  (interactive)
+  (emado--remove-by-query "unprioritized")
+  (transient-quit-one))
+
+(defun emado--remove-undeadlined ()
+  "Remove undeadlined entries."
+  (interactive)
+  (emado--remove-by-query "undeadlined")
+  (transient-quit-one))
 
 (defun emado--remove-query (&optional initial)
   "Remove entries matching a custom query.
@@ -787,6 +877,11 @@ If INITIAL is non-nil, use it as initial input."
       (setq emado--last-query query)
       (emado--remove-by-query query)))
   (transient-quit-one))
+
+(defun emado-remove-fuzzy-any ()
+  "Fuzzy remove by any."
+  (interactive)
+  (emado--remove-query "any ~~ "))
 
 (defun emado-remove-fuzzy-status ()
   "Fuzzy remove by status."

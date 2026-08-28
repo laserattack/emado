@@ -183,6 +183,9 @@ Set this once and all operations will use it.")
 (defvar emado-parallel-mode nil
   "If non-nil, enable parallel processing for mado commands.")
 
+(defvar emado-load-all-first-mode nil
+  "If non-nil, load all entries before filtering for mado commands.")
+
 (defvar emado--last-query nil
   "Last query used for list or remove operations.")
 
@@ -311,10 +314,13 @@ Set this once and all operations will use it.")
 
 ;;; Core helpers
 
-(defun emado--with-parallel-if-set (args)
-  "Prepend `--parallel' to ARGS if `emado-parallel-mode' is non-nil."
-  (if emado-parallel-mode
-      (cons "--parallel" args)
+(defun emado--with-global-flags (args)
+  "Prepend global flags to ARGS based on current settings."
+  (let ((args args))
+    (when emado-load-all-first-mode
+      (setq args (cons "--load-all-first" args)))
+    (when emado-parallel-mode
+      (setq args (cons "--parallel" args)))
     args))
 
 (defun emado--delete-directory-and-string (dir)
@@ -418,7 +424,7 @@ If no CALLBACK, just display output in emado buffer."
   "Remove entries matching QUERY after confirmation."
   (when (yes-or-no-p (format "Emado (remove query): %s ? " query))
     (let* ((targs (transient-args 'emado-remove-menu))
-           (args (emado--with-parallel-if-set `("remove" ,@targs ,query))))
+           (args (emado--with-global-flags `("remove" ,@targs ,query))))
       (setq emado--last-args args)
       (emado--show-status)
       (emado--run args #'emado--display))))
@@ -614,7 +620,7 @@ For Main directory line, open the main directory."
   (interactive)
   (let* ((transient-current-prefix 'emado-init-menu)
          (targs (transient-args 'emado-init-menu))
-         (args (emado--with-parallel-if-set (append '("init") targs))))
+         (args (emado--with-global-flags (append '("init") targs))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -639,7 +645,7 @@ For Main directory line, open the main directory."
   (interactive)
   (let* ((transient-current-prefix 'emado-new-menu)
          (targs (transient-args 'emado-new-menu))
-         (args (emado--with-parallel-if-set (append '("new") targs))))
+         (args (emado--with-global-flags (append '("new") targs))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -696,7 +702,7 @@ For Main directory line, open the main directory."
   "List entries matching QUERY with EXTRA-ARGS."
   (let* ((transient-current-prefix 'emado-list-menu)
          (targs (transient-args 'emado-list-menu))
-         (args (emado--with-parallel-if-set `("list" ,@targs ,@extra-args ,query))))
+         (args (emado--with-global-flags `("list" ,@targs ,@extra-args ,query))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))
@@ -923,7 +929,7 @@ If INITIAL is non-nil, use it as initial input."
 (defun emado-info ()
   "Show repository info."
   (interactive)
-  (let ((args (emado--with-parallel-if-set '("info"))))
+  (let ((args (emado--with-global-flags '("info"))))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))
@@ -947,6 +953,16 @@ If INITIAL is non-nil, use it as initial input."
   (message "Working directory cleared, using default")
   (emado-info))
 
+;; ---- Load all first mode ----
+
+(transient-define-suffix emado-toggle-load-all-first-mode ()
+  "Toggle load-all-first mode for mado operations."
+  :transient t
+  (interactive)
+  (setq emado-load-all-first-mode (not emado-load-all-first-mode))
+  (message "Load-all-first mode %s" (if emado-load-all-first-mode "enabled" "disabled"))
+  (emado-info))
+
 ;; ---- Parallel mode ----
 
 (transient-define-suffix emado-toggle-parallel-mode ()
@@ -967,11 +983,16 @@ If INITIAL is non-nil, use it as initial input."
                        (format "Current: %s" default-directory))))
    ("w" "Set directory" emado-set-working-directory)
    ("W" "Clear directory" emado-clear-working-directory)]
-  ["Parallel mode"
+  ["Parallel mode (advanced)"
    (:info (lambda () (if emado-parallel-mode
                          "Current: enabled"
                        "Current: disabled")))
    ("p" "Toggle" emado-toggle-parallel-mode)]
+  ["Load all first (advanced)"
+   (:info (lambda () (if emado-load-all-first-mode
+                         "Current: enabled"
+                       "Current: disabled")))
+   ("F" "Toggle" emado-toggle-load-all-first-mode)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 

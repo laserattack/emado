@@ -48,6 +48,7 @@
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ALLOF\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ANYOF\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(IN\\)\\_>" (1 'emado-face))
+   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(HAS\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ANY\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ALL\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(UNTAGGED\\)\\_>" (1 'emado-face))

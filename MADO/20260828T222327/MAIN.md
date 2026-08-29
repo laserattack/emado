@@ -1,0 +1,3 @@
+- NAME: Покрыть все флаги mado
+- TAGS: feat, flags, options
+- STATUS: opened

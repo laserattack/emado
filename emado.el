@@ -616,7 +616,7 @@ For Main directory line, open the main directory."
                   nil))))
   :prompt "Emado (create entry template): ")
 
-;; ---- Init ----
+;;; Init menu
 
 (transient-define-prefix emado-init-menu ()
   "Initialize mado repository."
@@ -641,7 +641,7 @@ For Main directory line, open the main directory."
     (emado--run args #'emado--display))
   (transient-quit-one))
 
-;; ---- New entry ----
+;;; New entry menu
 
 (transient-define-prefix emado-new-menu ()
   "Create new mado entry."
@@ -666,7 +666,7 @@ For Main directory line, open the main directory."
     (emado--run args #'emado--display))
   (transient-quit-one))
 
-;; ---- List ----
+;;; List menu
 
 (transient-define-prefix emado-list-menu ()
   "List mado entries."
@@ -813,7 +813,7 @@ If INITIAL is non-nil, use it as initial input."
   (interactive)
   (emado--list-query "time ~~ "))
 
-;; ---- Remove ----
+;;; Remove menu
 
 (transient-define-prefix emado-remove-menu ()
   "Remove mado entries."
@@ -939,7 +939,7 @@ If INITIAL is non-nil, use it as initial input."
   (interactive)
   (emado--remove-query "time ~~ "))
 
-;; ---- Info ----
+;;; Info menu
 
 (defun emado-info ()
   "Show repository info."
@@ -949,7 +949,7 @@ If INITIAL is non-nil, use it as initial input."
     (emado--show-status)
     (emado--run args #'emado--display)))
 
-;; ---- Working directory ----
+;;; Settings menu
 
 (transient-define-suffix emado-set-working-directory ()
   "Set working directory for mado operations."
@@ -968,8 +968,6 @@ If INITIAL is non-nil, use it as initial input."
   (message "Working directory cleared, using default")
   (emado-info))
 
-;; ---- Load all first mode ----
-
 (transient-define-suffix emado-toggle-load-all-first-mode ()
   "Toggle load-all-first mode for mado operations."
   :transient t
@@ -978,8 +976,6 @@ If INITIAL is non-nil, use it as initial input."
   (message "Load-all-first mode %s" (if emado-load-all-first-mode "enabled" "disabled"))
   (emado-info))
 
-;; ---- Parallel mode ----
-
 (transient-define-suffix emado-toggle-parallel-mode ()
   "Toggle parallel mode for mado operations."
   :transient t
@@ -987,8 +983,6 @@ If INITIAL is non-nil, use it as initial input."
   (setq emado-parallel-mode (not emado-parallel-mode))
   (message "Parallel mode %s" (if emado-parallel-mode "enabled" "disabled"))
   (emado-info))
-
-;; ---- Settings Menu ----
 
 (transient-define-prefix emado-settings-menu ()
   "Session settings for emado."
@@ -1011,7 +1005,7 @@ If INITIAL is non-nil, use it as initial input."
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 
-;; ---- Main Menu ----
+;;; Main Menu
 
 (transient-define-prefix emado-menu ()
   "Mado entry manager for Emacs."

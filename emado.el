@@ -74,6 +74,8 @@
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NSTARTS\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ENDS\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NENDS\\)\\_>" (1 'emado-face))
+   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(GLOB\\)\\_>" (1 'emado-face))
+   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NGLOB\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(LPAREN\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(RPAREN\\)\\_>" (1 'emado-face))
    '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(COMMA\\)\\_>" (1 'emado-face))

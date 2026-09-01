@@ -28,7 +28,10 @@
 
 (defconst emado-font-lock-keywords
   (list
-   '("^\\(Main directory\\|Entries count\\|Statuses\\|Tags\\|Priorities\\|Hint\\):" 1 'emado-face)
+   '("^\\(Main directory\\|Entries count\\|Hint\\):" 1 'emado-face)
+   '("^\\(Statuses ([0-9]+)\\):" 1 'emado-face)
+   '("^\\(Tags ([0-9]+)\\):" 1 'emado-face)
+   '("^\\(Priorities ([0-9]+)\\):" 1 'emado-face)
    '("\\_<\\(TIME\\|MTIME\\|PATH\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
    '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
    '("^\\(Here\\):" 1 'emado-face)
@@ -143,7 +146,7 @@
   "Working directory path is as real as my will to live"
   "Message shown when working directory path does not exist.")
 
-(defconst emado--outline-regexp "^\\(Statuses\\|Tags\\|Priorities\\):"
+(defconst emado--outline-regexp "^\\(Statuses ([0-9]+)\\|Tags ([0-9]+)\\|Priorities ([0-9]+)\\):"
   "Regexp for outline headings in emado buffer.")
 
 (defconst emado--bindings
@@ -313,9 +316,9 @@ Set this once and all operations will use it.")
                 (save-excursion
                   (beginning-of-line)
                   (cond
-                   ((looking-at "^Statuses:") 3)
-                   ((looking-at "^Tags:") 2)
-                   ((looking-at "^Priorities:") 1)
+                   ((looking-at "^Statuses ([0-9]+):") 3)
+                   ((looking-at "^Tags ([0-9]+):") 2)
+                   ((looking-at "^Priorities ([0-9]+):") 1)
                    (t 1)))))
   (outline-minor-mode 1)
   (display-line-numbers-mode -1)
@@ -455,9 +458,9 @@ If no CALLBACK, just display output in emado buffer."
       (forward-line -1)
       (beginning-of-line))
     (cond
-     ((looking-at "^Statuses:") 'statuses)
-     ((looking-at "^Tags:") 'tags)
-     ((looking-at "^Priorities:") 'priorities))))
+     ((looking-at "^Statuses ([0-9]+):") 'statuses)
+     ((looking-at "^Tags ([0-9]+):") 'tags)
+     ((looking-at "^Priorities ([0-9]+):") 'priorities))))
 
 (defun emado-go-at-point ()
   "Perform action based on current line context."

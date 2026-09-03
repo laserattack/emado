@@ -440,6 +440,15 @@ If no CALLBACK, just display output in emado buffer."
         (emado--run emado--last-args))
     (message "No previous command to repeat")))
 
+(defun emado--list-entries (query &optional extra-args)
+  "List entries matching QUERY with EXTRA-ARGS."
+  (let* ((transient-current-prefix 'emado-list-menu)
+         (targs (transient-args 'emado-list-menu))
+         (args (emado--with-global-flags `("list" ,@targs ,@extra-args ,query))))
+    (setq emado--last-args args)
+    (emado--show-status)
+    (emado--run args #'emado--display)))
+
 (defun emado--remove-by-query (query)
   "Remove entries matching QUERY after confirmation."
   (when (yes-or-no-p (format "Emado (remove query): %s ? " query))
@@ -713,15 +722,6 @@ For Main directory line, open the main directory."
     ("C-r" "Reset" emado--reset-options)]]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
-
-(defun emado--list-entries (query &optional extra-args)
-  "List entries matching QUERY with EXTRA-ARGS."
-  (let* ((transient-current-prefix 'emado-list-menu)
-         (targs (transient-args 'emado-list-menu))
-         (args (emado--with-global-flags `("list" ,@targs ,@extra-args ,query))))
-    (setq emado--last-args args)
-    (emado--show-status)
-    (emado--run args #'emado--display)))
 
 (defun emado--list-all ()
   "List all entries."

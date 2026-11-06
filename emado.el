@@ -28,67 +28,12 @@
 
 (defconst emado-font-lock-keywords
   (list
-   '("^\\(Main directory\\|Entries count\\|Hint\\):" 1 'emado-face)
+   '("^\\(Main directory\\|Entries count\\):" 1 'emado-face)
    '("^\\(Statuses ([0-9]+)\\):" 1 'emado-face)
    '("^\\(Tags ([0-9]+)\\):" 1 'emado-face)
    '("^\\(Priorities ([0-9]+)\\):" 1 'emado-face)
    '("\\_<\\(TIME\\|MTIME\\|PATH\\|NAME\\|PRIORITY\\|DEADLINE\\|STATUS\\|TAGS\\):" 1 'emado-face)
-   '("^\\(Mado error [^:\n]+\\):" 1 'emado-face)
-   '("^\\(Here\\):" 1 'emado-face)
-   '("^ *\\(\\^+\\)$" 1 'emado-face)
-   '("^\\(Error\\) at line \\([0-9]+\\), col \\([0-9]+\\):"
-     (1 'emado-face)
-     (2 'emado-face)
-     (3 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(DEADLINE\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(PRIORITY\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(TAG\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(STATUS\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NAME\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(PATH\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(TIME\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(MTIME\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ALLOF\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ANYOF\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(IN\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(HAS\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ANY\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ALL\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(UNTAGGED\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(UNSTATUSED\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(UNNAMED\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(UNPRIORITIZED\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(UNDEADLINED\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(AND\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(OR\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(XOR\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NOT\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(GT\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(LT\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(GE\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(LE\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(EQ\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NE\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(FUZZY\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NFUZZY\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(SUBSTR\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NSUBSTR\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(STARTS\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NSTARTS\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(ENDS\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NENDS\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(GLOB\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NGLOB\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(LPAREN\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(RPAREN\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(COMMA\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(DOTDOT\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(LBRACKET\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(RBRACKET\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(NUMBER VALUE\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(STRING VALUE\\)\\_>" (1 'emado-face))
-   '("^Error at line [0-9]+, col [0-9]+: .*\\_<\\(TIMESTAMP VALUE\\)\\_>" (1 'emado-face))
-   '("^\\(.*\\):\\([0-9]+\\): " 0 '(face nil invisible t))
+   '("^\\(.*\\):\\([0-9]+\\):\\(?: \\|$\\)" 0 '(face nil invisible t))
    )
   "Font lock keywords for emado-mode.")
 
@@ -199,12 +144,6 @@
 (defvar emado--working-directory nil
   "Working directory for mado operations.
 Set this once and all operations will use it.")
-
-(defvar emado-parallel-mode nil
-  "If non-nil, enable parallel processing for mado commands.")
-
-(defvar emado-load-all-first-mode nil
-  "If non-nil, load all entries before filtering for mado commands.")
 
 (defvar emado--last-query nil
   "Last query used for list or remove operations.")
@@ -334,15 +273,6 @@ Set this once and all operations will use it.")
 
 ;;; Core helpers
 
-(defun emado--with-global-flags (args)
-  "Prepend global flags to ARGS based on current settings."
-  (let ((args args))
-    (when emado-load-all-first-mode
-      (setq args (cons "--load-all-first" args)))
-    (when emado-parallel-mode
-      (setq args (cons "--parallel" args)))
-    args))
-
 (defun emado--delete-directory-and-string (dir)
   "Delete directory DIR after confirmation and update buffer.
 Return t if directory was deleted, nil otherwise."
@@ -444,7 +374,7 @@ If no CALLBACK, just display output in emado buffer."
   "List entries matching QUERY with EXTRA-ARGS."
   (let* ((transient-current-prefix 'emado-list-menu)
          (targs (transient-args 'emado-list-menu))
-         (args (emado--with-global-flags `("list" ,@targs ,@extra-args ,query))))
+         (args `("ls" ,@targs ,@extra-args ,query)))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))
@@ -453,7 +383,7 @@ If no CALLBACK, just display output in emado buffer."
   "Remove entries matching QUERY after confirmation."
   (when (yes-or-no-p (format "Emado (remove query): %s ? " query))
     (let* ((targs (transient-args 'emado-remove-menu))
-           (args (emado--with-global-flags `("remove" ,@targs ,query))))
+           (args `("rm" ,@targs ,query)))
       (setq emado--last-args args)
       (emado--show-status)
       (emado--run args #'emado--display))))
@@ -477,7 +407,7 @@ If no CALLBACK, just display output in emado buffer."
   (beginning-of-line)
   (cond
    ;; File paths: path/to/file.md:1:
-   ((looking-at "^\\(.*\\):\\([0-9]+\\): ")
+   ((looking-at "^\\(.*\\):\\([0-9]+\\):\\(?: \\|$\\)")
     (let ((file (match-string 1)))
       (find-file-other-window file)
       (goto-char (point-min))))
@@ -499,7 +429,7 @@ If no CALLBACK, just display output in emado buffer."
                        ('priorities (concat "priority = " value)))))
           (when query
             (let* ((targs (transient-args 'emado-list-menu))
-                   (args `("list" ,@targs ,query)))
+                   (args `("ls" ,@targs ,query)))
               (setq emado--last-args args)
               (emado--show-status)
               (emado--run args #'emado--display)))))))))
@@ -512,7 +442,7 @@ For Entries count line, remove all entries."
   (beginning-of-line)
   (cond
    ;; File paths: path/to/file.md:1:
-   ((looking-at "^\\(.*\\):\\([0-9]+\\): ")
+   ((looking-at "^\\(.*\\):\\([0-9]+\\):\\(?: \\|$\\)")
     (let ((dir (file-name-directory (match-string 1))))
       (emado--delete-directory-and-string dir)))
    ;; Main directory: /path/to/dir
@@ -543,7 +473,7 @@ For Main directory line, open the main directory."
   (beginning-of-line)
   (cond
    ;; Entry file: path/to/file.md:1:
-   ((looking-at "^\\(.*\\):\\([0-9]+\\): ")
+   ((looking-at "^\\(.*\\):\\([0-9]+\\):\\(?: \\|$\\)")
     (dired-other-window (file-name-directory (match-string 1))))
    ;; Main directory: /path/to/dir
    ((looking-at "^Main directory: \\(.*\\)$")
@@ -571,63 +501,59 @@ For Main directory line, open the main directory."
   "Sort criteria."
   :class 'emado--default-option
   :default-value "-priority,-time"
-  :argument "--sort="
+  :argument "-sort="
   :reader (lambda (prompt _initial _history)
             (read-string "Emado (sort, +/-field,...): "))
   :prompt "Emado (sort): ")
-
-(transient-define-infix emado--flag-ignore-case ()
-  "Case-insensitive search."
-  :class 'emado--default-switch
-  :default-value t
-  :argument "--ignore-case"
-  :description "Case-insensitive")
 
 (transient-define-infix emado--flag-hide-time ()
   "Hide time field."
   :class 'emado--default-switch
   :default-value t
-  :argument "--hide-time"
+  :argument "-hide-time"
   :description "Hide time")
 
 (transient-define-infix emado--flag-hide-mtime ()
   "Hide mtime field."
   :class 'emado--default-switch
   :default-value t
-  :argument "--hide-mtime"
+  :argument "-hide-mtime"
   :description "Hide mtime")
 
 (transient-define-infix emado--flag-hide-path ()
   "Hide path field."
   :class 'emado--default-switch
   :default-value t
-  :argument "--hide-path"
+  :argument "-hide-path"
   :description "Hide path")
+
+(defun emado--template-names ()
+  "Return names from the template directory selected by the current Mado."
+  (let ((default-directory (or emado--working-directory default-directory)))
+    (with-temp-buffer
+      (when (zerop (process-file emado-executable nil (list t nil) nil
+                                 "info" "-only-dir"))
+        (let* ((root (string-trim-right (buffer-string) "[\r\n]+"))
+               (templates-dir
+                (and (not (string-empty-p root))
+                     (seq-find #'file-directory-p
+                               (mapcar (lambda (name) (expand-file-name name root))
+                                       '("templates" ".templates" "_templates"))))))
+          (when templates-dir
+            (mapcar #'file-name-base
+                    (seq-filter #'file-regular-p
+                                (directory-files templates-dir t "\\.md$")))))))))
 
 (transient-define-infix emado--flag-template ()
   "Template name for new entry."
   :class 'transient-option
-  :argument "--template="
+  :argument "-template="
   :reader (lambda (prompt _initial _history)
-            (let* ((default-directory (or emado--working-directory default-directory))
-                   (dir (string-trim
-                         (shell-command-to-string
-                          (concat emado-executable " info --dir"))))
-                   (templates-dir (when (and dir
-                                             (not (string-empty-p dir))
-                                             (file-directory-p dir))
-                                    (expand-file-name ".templates/" dir)))
-                   (files (when (and templates-dir
-                                     (file-exists-p templates-dir))
-                            (directory-files templates-dir nil "\\.md$")))
-                   (names (mapcar (lambda (f)
-                                    (file-name-sans-extension f))
-                                  files)))
+            (let ((names (emado--template-names)))
               (if names
                   (completing-read prompt names nil t)
-                (progn
-                  (message "No templates found")
-                  nil))))
+                (message "No templates found")
+                nil)))
   :prompt "Emado (create entry template): ")
 
 ;;; Init menu
@@ -637,7 +563,7 @@ For Main directory line, open the main directory."
   ["Initialize"
    ("i" "Init" emado--init)]
   ["Main"
-   ("f" "Try force init" "--force")]
+   ("f" "Try force init" "-force")]
   [["Save/Reset options"
     ("C-s" "Save" emado--save-options)]
    [""
@@ -650,7 +576,7 @@ For Main directory line, open the main directory."
   (interactive)
   (let* ((transient-current-prefix 'emado-init-menu)
          (targs (transient-args 'emado-init-menu))
-         (args (emado--with-global-flags (append '("init") targs))))
+         (args (cons "init" targs)))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -676,7 +602,7 @@ For Main directory line, open the main directory."
   (interactive)
   (let* ((transient-current-prefix 'emado-new-menu)
          (targs (transient-args 'emado-new-menu))
-         (args (emado--with-global-flags (append '("new") targs))))
+         (args (cons "new" targs)))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display))
@@ -703,18 +629,17 @@ For Main directory line, open the main directory."
     ("fi" "Time" emado-list-fuzzy-time)
     ("fh" "Path" emado-list-fuzzy-path)]]
   ["Main"
-   ("s" "Sort" emado--flag-sort)
-   ("i" "Case-insensitive" emado--flag-ignore-case)]
+   ("s" "Sort" emado--flag-sort)]
   [["Hide fields"
-    ("N" "Name" "--hide-name")
+    ("N" "Name" "-hide-name")
     ("T" "Time" emado--flag-hide-time)
     ("M" "Mtime" emado--flag-hide-mtime)
-    ("D" "Deadline" "--hide-deadline")
-    ("O" "Only hidden" "--only-hidden")]
+    ("D" "Deadline" "-hide-deadline")
+    ("O" "Only hidden" "-only-hidden")]
    [""
-    ("P" "Priority" "--hide-priority")
-    ("S" "Status" "--hide-status")
-    ("G" "Tags" "--hide-tags")
+    ("P" "Priority" "-hide-priority")
+    ("S" "Status" "-hide-status")
+    ("G" "Tags" "-hide-tags")
     ("H" "Path" emado--flag-hide-path)]]
   [["Save/Reset options"
     ("C-s" "Save" emado--save-options)]
@@ -804,8 +729,6 @@ If INITIAL is non-nil, use it as initial input."
    [""
     ("fi" "Time" emado-remove-fuzzy-time)
     ("fh" "Path" emado-remove-fuzzy-path)]]
-  ["Main"
-   ("i" "Case-insensitive" emado--flag-ignore-case)]
   [["Save/Reset options"
     ("C-s" "Save" emado--save-options)]
    [""
@@ -879,7 +802,7 @@ If INITIAL is non-nil, use it as initial input."
 (defun emado-info ()
   "Show repository info."
   (interactive)
-  (let ((args (emado--with-global-flags '("info"))))
+  (let ((args '("info")))
     (setq emado--last-args args)
     (emado--show-status)
     (emado--run args #'emado--display)))
@@ -903,22 +826,6 @@ If INITIAL is non-nil, use it as initial input."
   (message "Working directory cleared, using default")
   (emado-info))
 
-(transient-define-suffix emado-toggle-load-all-first-mode ()
-  "Toggle load-all-first mode for mado operations."
-  :transient t
-  (interactive)
-  (setq emado-load-all-first-mode (not emado-load-all-first-mode))
-  (message "Load-all-first mode %s" (if emado-load-all-first-mode "enabled" "disabled"))
-  (emado-info))
-
-(transient-define-suffix emado-toggle-parallel-mode ()
-  "Toggle parallel mode for mado operations."
-  :transient t
-  (interactive)
-  (setq emado-parallel-mode (not emado-parallel-mode))
-  (message "Parallel mode %s" (if emado-parallel-mode "enabled" "disabled"))
-  (emado-info))
-
 (transient-define-prefix emado-settings-menu ()
   "Session settings for emado."
   ["Working directory"
@@ -927,16 +834,6 @@ If INITIAL is non-nil, use it as initial input."
                        (format "Current: %s" default-directory))))
    ("w" "Set directory" emado-set-working-directory)
    ("W" "Clear directory" emado-clear-working-directory)]
-  ["Parallel mode (advanced)"
-   (:info (lambda () (if emado-parallel-mode
-                         "Current: enabled"
-                       "Current: disabled")))
-   ("p" "Toggle" emado-toggle-parallel-mode)]
-  ["Load all first (advanced)"
-   (:info (lambda () (if emado-load-all-first-mode
-                         "Current: enabled"
-                       "Current: disabled")))
-   ("F" "Toggle" emado-toggle-load-all-first-mode)]
   ["Quit"
    ("q" "Quit" transient-quit-one)])
 

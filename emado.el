@@ -286,12 +286,18 @@ Set this once and all operations will use it.")
     (outline-show-all)
     (setq emado--all-sections-visible t)))
 
-;; Closes the results buffer and its window. Window errors propagate.
-;; Закрывает буфер результатов и его окно. Ошибки окна передаются вызывающему коду.
+;; Closes the results buffer and removes its window when other windows remain.
+;; Закрывает буфер результатов и удаляет его окно, если есть другие окна.
+;; Buffer hook and window errors propagate.
+;; Ошибки хуков буфера и окон передаются вызывающему коду.
 (defun emado-quit ()
-  "Close emado window and kill buffer."
+  "Kill the Emado buffer and close its window if it is not the only one."
   (interactive)
-  (kill-buffer-and-window))
+  ;; Keep the sole ordinary window so Emacs can display another buffer there.
+  ;; Сохранить единственное обычное окно, чтобы Emacs показал в нём другой буфер.
+  (if (one-window-p t)
+      (kill-buffer (current-buffer))
+    (kill-buffer-and-window)))
 
 ;; Moves forward by one visible line.
 ;; Переходит на следующую видимую строку.

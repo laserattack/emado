@@ -1,5 +1,5 @@
 - NAME: Написать user manual и добавить в меню переход на него
 - TAGS: feat, docs, manual
-- STATUS: opened
+- STATUS: not need
 
 по аналогии как в magit сделано

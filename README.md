@@ -9,8 +9,9 @@ templates, and open their Markdown files directly from Emacs.
 
 ## Installation
 
-You need Emacs 28.1 or later, Transient 0.12 or later, and the current
-`mado` executable from the linked repository in PATH.
+emado requires Emacs 28.1 or later, Transient 0.12 or later, and a current
+`mado` executable from the linked repository. Make sure Emacs can find
+`mado` on its `exec-path`, or set `emado-executable` to its absolute path.
 
 Copy `emado.el` to a directory on your Emacs `load-path` and add this to
 your configuration.

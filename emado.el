@@ -556,6 +556,22 @@ For Main directory line, open the main directory."
                 nil)))
   :prompt "Emado (create entry template): ")
 
+;; Read an optional directory suffix. Empty input or a bare dash clears it.
+;; Читает суффикс каталога. Пустой ввод или один дефис сбрасывает его.
+;; Returns no errors. Minibuffer errors and quit propagate.
+;; Не возвращает ошибок. Ошибки минибуфера и отмена передаются вызывающему коду.
+(transient-define-infix emado--flag-suffix ()
+  "Set an optional suffix for the entry directory name."
+  :class 'transient-option
+  :argument "-suffix="
+  :reader (lambda (prompt initial history)
+            (let ((suffix (read-string prompt (or initial "-") history)))
+              ;; Treat the placeholder as an unset option.
+              ;; Считать подсказку незаданным значением.
+              (unless (member suffix '("" "-"))
+                suffix)))
+  :prompt "Emado (entry suffix): ")
+
 ;;; Init menu
 
 (transient-define-prefix emado-init-menu ()
@@ -589,7 +605,8 @@ For Main directory line, open the main directory."
   ["Create"
    ("c" "New entry" emado--new-entry)]
   ["Main"
-   ("t" "Template" emado--flag-template)]
+   ("t" "Template" emado--flag-template)
+   ("s" "Suffix" emado--flag-suffix)]
   [["Save/Reset options"
     ("C-s" "Save" emado--save-options)]
    [""

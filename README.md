@@ -36,6 +36,9 @@ use `s w` to set a working directory for the session or `s W` to clear it.
   ancestor already contains a repository.
 - Use `c c` to create an entry with Mado's default task header. To pick
   a template first, use `c t`, select a name, then press `c`.
+  To add a directory suffix, use `c s`, type after the prefilled `-`
+  (for example, `-login`), then press `c` to create the entry. Clear
+  the field or leave just `-` to omit the suffix.
 - Use `l a` to list all entries or `l l` to enter a Mado query such as
   `status = open and tag = bug`. For a quick fuzzy name search, use
   `l f n`. The list menu also controls sorting and visible fields.

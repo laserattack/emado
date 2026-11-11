@@ -354,12 +354,13 @@ Return t if directory was deleted, nil otherwise."
                                  (kill-buffer)))))
                         (emado--display output))
                       (setq emado--current-process nil))))))
-      (setq emado--current-process proc))))
+      (setq emado--current-process proc)
+      (when (process-live-p proc)
+        (emado--show-status)))))
 
 (defun emado--execute (args)
   "Run ARGS and remember them for repetition."
   (setq emado--last-args args)
-  (emado--show-status)
   (emado--run args))
 
 (defun emado-repeat-last ()

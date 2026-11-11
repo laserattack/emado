@@ -826,7 +826,7 @@ If INITIAL is non-nil, use it as initial input."
 
 ;;;###autoload
 (defun emado-default-bindings ()
-  "Set default global keybindings for emado."
+  "Bind C-c e globally to `emado-info'."
   (interactive)
   (global-set-key (kbd "C-c e") 'emado-info))
 

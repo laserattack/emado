@@ -772,7 +772,7 @@ If INITIAL is non-nil, use it as initial input."
     (`(entry . ,path) (dired-other-window (file-name-directory path)))
     (`(repository . ,path) (dired-other-window path))))
 
-;;; Info menu
+;;; Repository info
 
 (defun emado-info ()
   "Show repository info."
